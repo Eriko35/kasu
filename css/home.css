@@ -6,6 +6,8 @@
     --navt-col: #ffffff;
     --base-light: #a06b56;
     --active: #925d48;
+    --gold-accent: #e6a33c;
+    --gold-border: #ffd700;
 }
 p{
     margin: 2px;
@@ -160,9 +162,17 @@ body {
     user-select: none;
     color: var(--baselt);
     text-decoration: #000000;
+    transition: all 0.2s ease;
+    border-radius: 8px;
 }
 .navindex:hover {
-    background:  var(--light-shade);
+    background: var(--active);
+    color: white;
+}
+.navindex.active {
+    background: var(--active);
+    color: white;
+    font-weight: bold;
 }
 .logout {
     padding: 10px;
@@ -187,21 +197,42 @@ body {
 }
 .bigTitle {
     font-size: 50px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
+
+/* Improved Join Contest Button */
 #joinContest {
-    background: #00000077;
-    border: 1px solid white;
-    padding: 10px;
+    background: linear-gradient(135deg, #e6a33c 0%, #c77b2a 100%);
+    border: 2px solid #ffd700;
+    border-radius: 30px;
+    padding: 15px 40px;
     color: white;
-    font-size: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(230, 163, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    font-family: 'Times New Roman', serif;
+}
+#joinContest:hover {
+    background: linear-gradient(135deg, #f0b44a 0%, #d88a2e 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(230, 163, 60, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 #joinContest:active {
-    background: #000000b4;
+    background: linear-gradient(135deg, #c77b2a 0%, #b06a20 100%);
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(230, 163, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
+
 #subDeadline {
     color: white;
     font-size: 18px;
     margin: 5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 .featured-artworks {
     display: flex;
@@ -329,6 +360,7 @@ body {
 }
 .entrance:hover {
     transform: translateY(-20px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 .entrance p {
     color: white;
@@ -416,6 +448,14 @@ footer {
     align-items: center;
     margin: 20px;
     cursor: pointer;
+    transition: transform 0.3s ease;
+    border-radius: 10px;
+    background: var(--base-light);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.aucart:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 .aucart p {
     width: 150px;
@@ -454,6 +494,10 @@ footer {
     color: var(--text-color);
     font-family: Arial, Helvetica, sans-serif;
     cursor: pointer;
+    transition: color 0.3s ease;
+}
+.full-auc span:hover {
+    color: var(--gold-accent);
 }
 #auctitle {
     font-size: 30px;
@@ -519,7 +563,8 @@ footer {
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
-    border: 1px solid black;
+    border: 3px solid var(--gold-accent);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 .userprofile img{
     width: 100%;
@@ -595,13 +640,144 @@ footer {
     padding: 5%;
     width: 80%;
     aspect-ratio: 1/1;
-    border: 3px dashed black;
+    border: 3px dashed var(--gold-accent);
     border-radius: 50px;
     overflow: hidden;
     user-select: none;
+    transition: all 0.3s ease;
 }
 .dropFileArea:hover {
     padding: 2%;
     font-size: 25px;
     background-color: var(--base-light);
+    border-color: var(--gold-border);
+}
+/* Category Select */
+.category-select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border: 2px solid var(--base-light);
+    border-radius: 5px;
+    background-color: var(--base-light);
+    color: var(--baselt);
+    cursor: pointer;
+}
+
+.category-select:focus {
+    outline: none;
+    border-color: var(--gold-accent);
+}
+
+.category-select option {
+    background-color: white;
+    color: black;
+}
+
+/* Admin Panel */
+#adminPanel {
+    width: 100%;
+    padding: 20px;
+}
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.admin-container h2 {
+    font-size: 36px;
+    margin-bottom: 30px;
+    color: var(--text-color);
+}
+
+.admin-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: var(--base-light);
+    padding: 20px 40px;
+    border-radius: 15px;
+    min-width: 150px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--baselt);
+}
+
+.stat-card p {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.admin-actions {
+    text-align: left;
+    background: var(--base-light);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.admin-actions h3 {
+    color: var(--baselt);
+    margin-bottom: 20px;
+}
+
+.artworks-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.artwork-item {
+    display: flex;
+    gap: 15px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    transition: transform 0.3s ease;
+}
+.artwork-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.artwork-item img {
+    border-radius: 5px;
+}
+
+.artwork-item h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.artwork-item p {
+    margin: 2px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Contest Navigation Active State */
+#nav6.active {
+    color: var(--gold-accent);
+    font-weight: bold;
 }
