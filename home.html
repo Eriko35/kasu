@@ -1,0 +1,124 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/stylesheet.css">
+    <title>Kamuseo</title>
+    <script type="module" src="js/home.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <img src="css/icons/icon-light.webp" alt="Kamuseo Logo" class="icon-navbar" id="icon-nav">
+        <p class="title-navbar">KAMUSEO</p>
+        <a class="navlink active" id = "navhome" onclick="navIndex(1)">Home</a>
+        <a class="navlink" id = "navabout"onclick="navIndex(2)">About</a>
+        <a class="navlink" id = "navcontact" onclick="navIndex(3)">Contact</a>
+        <a class="navlink" id = "navlogin" onclick="navIndex(2)">Log In</a>
+        <img id="darkToggle" src="css/icons/dark.webp" onclick="toggleDarkMode()">
+        </img>
+        
+    </div>
+    <div class="homeindex" id="aboutus" style="display: none;">
+        <div class="aboutsection">
+            <div>
+                <img src="css/image/homeimage.webp" alt="About Us Image" id="aboutus-image">
+            </div>
+            
+            <div>
+                <h1>About us</h1>
+                <p> KaMuseo was created by students with the goal of expressing art through a digital platform. It serves as a space where creativity can be shared and experienced. 
+                Built with creativity and passion, KaMuseo reflects how art can evolve into technology while valuing the expression and culture of arts.
+            </div>
+        </div>
+            
+
+<!-- Mission: KaMuseo aims to be a space wherein artists can freely show their art pieces while keeping the feeling of nostalgia and vibes of a real museum. 
+
+Vision: To be an online platform that encourages arts and safe spaces for artists and to be known as a digital museum. Successfully influenced the other that digital art and traditional art are both important and deserve equal recognition.</h3>
+            -->
+        <div class="missionvision">
+            <div>
+                <p>Mission: KaMuseo aims to be a space wherein artists can freely show their art pieces while keeping the feeling of nostalgia and vibes of a real museum. </p>
+            </div>
+            <div>
+                <p>Vision: To be an online platform that encourages arts and safe spaces for artists and to be known as a digital museum. Successfully influenced the other that digital art and traditional art are both important and deserve equal recognition</p>
+            </div>
+            
+        </div>
+    </div>
+    <div class="homeindex" id="contact" style="display: none;">
+        <div>
+            <img src="css/image/homeimage.jpeg" alt="About Us Image" id="aboutus-image">
+        </div>
+        <div>
+            <h1>About us</h1>
+            <p> KaMuseo was created by students with the goal of expressing art through a digital platform. It serves as a space where creativity can be shared and experienced. 
+            Built with creativity and passion, KaMuseo reflects how art can evolve into technology while valuing the expression and culture of arts.
+
+<!-- Mission: KaMuseo aims to be a space wherein artists can freely show their art pieces while keeping the feeling of nostalgia and vibes of a real museum. 
+
+Vision: To be an online platform that encourages arts and safe spaces for artists and to be known as a digital museum. Successfully influenced the other that digital art and traditional art are both important and deserve equal recognition.</h3>
+            -->
+        </div>
+    </div>
+    <div class="homeindex" id="home">
+        <div class="body">
+            <div class="home-section">
+                <button id="joinContest">
+                    Join Contest
+                </button>
+                <img src="css/image/homeimage.webp" alt="Home Image" id="home-image">
+                
+            </div>
+
+            <div class="featured-section">
+                    <h2>Featured Artworks</h2>
+                    <div class="featured-artworks">
+                        <div id="rankone" class="art-featured">
+                            <div class = "gold-frame">
+                                <div id="rankone" class="artwork">
+                                    
+                                </div>
+                            </div>
+                            <h2>Featured Artworks</h2>
+                            
+                        </div>
+                        <div id="ranktwo" class="art-featured">
+                            
+                                        <div class = "iron-frame">
+                                <div id="ranktwo" class="artwork">
+                                    
+                                </div>
+                            </div>
+                            <h2>Featured Artworks</h2>
+                        </div>
+                        <div  class="art-featured">
+                            <div class = "bronze-frame">
+                                <div id="rankthree" class="artwork">
+                                    
+                                </div>
+                            </div>
+                            <h2>Featured Artworks</h2>
+                        </div>
+                    </div>
+            </div>
+            
+            <div class="hallway-section">
+                
+                <a class="entrance" id="e1" href="natmuseum.html">
+                    <p><img src="css/icons/temple.webp" alt="National Museum" class="entrance-image"><br>National Museum</p>
+                </a>
+                <a class="entrance" id="e2" href="scroll.html">
+                    <p><img src="css/icons/trophy.webp" alt="National Museum" class="entrance-image"><br>Local Museum</p>
+                </a>
+                <a class="entrance" id="e3" href="scroll.html">
+                    <p><img src="css/icons/paint.webp" alt="National Museum" class="entrance-image"><br>Art Contest</p>
+                </a>
+                <div class="hallgradient"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>

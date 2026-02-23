@@ -1,0 +1,154 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        .scene {
+            display: flex;
+            flex-direction: column;
+           
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        .art {
+            width: 250px;
+            height: 350px;
+            background-color: lightgray;
+            box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+            margin: 50px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .floor {
+            will-change: transform, background-position;
+            position: fixed;
+            bottom: -75px;
+            left: -150px;
+            width: 120vw;
+            height: 20vh;
+
+            background-image: url('assets/image/floor.webp');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+
+            transform: perspective(1000px) rotateX(60deg);
+        }
+        .wall { 
+            width: fit-content;
+            height: 100vh;
+            display: grid;
+            align-items: center;
+            grid-auto-flow: column;
+            background-image: url('assets/image/wall.webp');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            background-position: top left;
+        }
+        
+        .horizontal-scroll {
+            width: 100vw;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body>
+    <div class="horizontal-scroll">
+        <div class="wall">
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+        </div>
+        <div class="floor">
+                        floor test
+        </div>
+    </div>
+        <script>
+            const scroller = document.querySelector('.horizontal-scroll');
+            const floor = document.querySelector('.floor');
+            const step = 200; // increase this for faster arrow scroll
+
+            // Existing wheel scroll → horizontal movement
+            scroller.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                scroller.scrollLeft += e.deltaY; // down → right, up → left
+                syncFloor();
+            }, { passive: false });
+
+            // Keep floor synced if scrollLeft changes by other means
+            scroller.addEventListener('scroll', syncFloor);
+
+            function syncFloor() {
+                floor.style.backgroundPositionX = `${-scroller.scrollLeft}px`;
+            }
+
+            // Arrow key navigation
+            window.addEventListener('keydown', (e) => {
+                const max = scroller.scrollWidth - scroller.clientWidth;
+
+                if (e.key === "ArrowRight") {
+                    scroller.scrollLeft = Math.min(scroller.scrollLeft + step, max);
+                    syncFloor();
+                } else if (e.key === "ArrowLeft") {
+                    scroller.scrollLeft = Math.max(scroller.scrollLeft - step, 0);
+                    syncFloor();
+                }
+            });
+        </script>
+
+
+</body>
+</html>

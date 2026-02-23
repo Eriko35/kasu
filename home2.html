@@ -1,0 +1,265 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamuseo</title>
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navdiv">
+            <div><img src="css/icons/icon-dark.webp"></div>
+            <div><p>KAMUSEO</p></div>
+            <div><a onclick="showMenu()"><img src="css/icons/menuon.webp"></a></div>
+        </div>
+                
+    </nav>
+    <main class="main">
+        <div class="maindiv">
+            <div class="homeindex" id="homef" style="display:none;">
+                <div class="home-section">
+                    <p class="bigTitle"><span id="contestTitle">Current Contest</span></p>
+                    <p id="subdeadline">Submission Deadline: <span id="deadlineDate"> 01/01/26 </span> </p>
+                    <button id="joinContest">
+                    Join Contest
+                    </button>
+                </div>
+                <p class="bodyTitle">Featured Artworks</p>
+                <div class="featured-artworks">
+                    <div id="rankone" class="art-featured">
+                        <div>
+                            <div class = "gold-frame">
+                                <div id="rankone" class="artwork">
+                                    <img class="artwork"src="css/image/Spoliarium.jpg" alt="">
+                                </div>
+                            </div>
+                            <p>1st Place</p>
+                        </div>
+                        
+                    </div>
+                    <div id="ranktwo" class="art-featured">
+                        <div>
+                            <div class = "iron-frame">
+                                <div id="ranktwo" class="artwork">
+                                    <img class="artwork" src="css/image/Tampuhan.jpg" alt="">
+                                </div>
+                            </div>
+                            <p>2nd Place</p>
+                        </div>
+                    </div>
+                    <div  class="art-featured">
+                        <div>
+                            <div class = "bronze-frame">
+                                <div id="rankthree" class="artwork">
+                                    <img class="artwork" src="css/image/portraitlady.jpg" alt="">
+                                </div>
+                            </div>
+                            <p>3rd Place</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="hallway-section">
+                    <a class="entrance" id="e1" href="natmuseum.html">
+                        
+                        <p><img src="css/icons/temple.webp" alt="National Museum" class="entrance-image"><br>National Museum</p>
+                    </a>
+                    <a class="entrance" id="e2" href="scroll.html">
+                        <p><img src="css/icons/trophy.webp" alt="National Museum" class="entrance-image"><br>Local Museum</p>
+                    </a>
+                </div>
+            </div>
+            <div class="homeindex" id="fullAucBox" style="display:none;">
+                <div class="full-auc">
+                        <div class="imgauc">
+                            <img id="artImg" src="css/image/Tampuhan.jpg">
+                        </div>
+                        <div class="descauc">
+                            <p id="artTitle">TITLE</p>
+                            <div class="aucdescarea">
+                                <p id="artDate">
+
+                                </p>
+                                    <p id="artDesc">Ang bango-bango ng bulaklak
+                        'Pag inaamoy 'pag inaamoy
+                        'Pag inaamoy anong sarap
+                        Ang bango-bango ang sarap-sarap
+                        Amuyin ang bulaklak
+                        Ang laki-laki ang laki-laki
+                        Ang laki-laki ng bulaklak
+                        Ang pula-pula ang pula-pula
+                        Ang pula-pula ng bulaklak
+                        Ang laki-laki ang pula-pula
+                        Ng kulay ng bulaklak
+                        Bubuka ang bulaklak papasok ang reyna
+                        Sasayaw ng cha-cha ang saya-saya
+                        Boom-ti-ya-ya boom-ti-ya-ya boom-ye-ye
+                        Boom-ti-ya-ya boom-ti-ya-ya bango-bango ng bulaklak
+                        'Pag inaamoy 'pag inaamoy
+                        'Pag inaamoy anong sarap
+                        Ang bango-bango ang sarap-sarap
+                        Amuyin ang bulaklak
+                        Ang laki-laki ang laki-laki
+                        Ang laki-laki ng bulaklak
+                        Ang pula-pula ang pula-pula
+                        Ang pula-pula ng bulaklak
+                        Ang laki-laki ang pula-pula
+                        Ng kulay ng bulaklak
+                        Bubuka ang bulaklak papasok ang reyna
+                        Sasayaw ng cha-cha ang saya-saya
+                        Boom-ti-ya-ya boom-ti-ya-ya boom-ye-ye
+                        Boom-ti-ya-ya boom-ti-ya-ya bango-bango ng bulaklak
+                        'Pag inaamoy 'pag inaamoy
+                        'Pag inaamoy anong sarap
+                        Ang bango-bango ang sarap-sarap
+                        Amuyin ang bulaklak
+                        Ang laki-laki ang laki-laki
+                        Ang laki-laki ng bulaklak
+                        Ang pula-pula ang pula-pula
+                        Ang pula-pula ng bulaklak
+                        Ang laki-laki ang pula-pula
+                        Ng kulay ng bulaklak
+                        Bubuka ang bulaklak papasok ang reyna
+                        Sasayaw ng cha-cha ang saya-saya
+                        Boom-ti-ya-ya boom-ti-ya-ya boom-ye-ye
+                        Boom-ti-ya-ya boom-ti-ya-ya boom-ye-ye</p>
+                            </div>
+                            
+                            <div class="biddingarea">
+                                <p>Current Bid:<p>$999,999,999</p></p>
+                                <input id="offerbid" type="number"><button>Offer Bid</button>
+                            </div>
+                        </div>
+                        <span onclick="navIndex(3)">X</span>
+                </div>
+            </div>
+            <div class="homeindex" id="auctionf" style="display:none;">  
+                <input type="text" placeholder="Search" class="searchbar">
+                <div class="aucCont">
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                </div>
+            </div>
+            <div class="homeindex" id="artistf" >
+
+            </div>
+            <div class="homeindex" id="aboutusf" style="display:none;">
+                <div class="aboutsection">
+                    <div>
+                        <img src="css/image/homeimage.webp" alt="About Us Image" id="aboutus-image">
+                    </div>
+                    
+                    <div>
+                        <h1>About us</h1>
+                                            <p> KaMuseo was created by students with the goal of expressing art through a digital platform. It serves as a space where creativity can be shared and experienced. 
+                        Built with creativity and passion, KaMuseo reflects how art can evolve into technology while vastyleluing the expression and culture of arts.
+                    </div>
+                </div>
+        <!-- Mission: KaMuseo aims to be a space wherein artists can freely show their art pieces while keeping the feeling of nostalgia and vibes of a real museum. 
+
+        Vision: To be an online platform that encourages arts and safe spaces for artists and to be known as a digital museum. Successfully influenced the other that digital art and traditional art are both important and deserve equal recognition.</h3>
+                    -->
+                <div class="missionvision">
+                    <div>
+                        <h1>Mission</h1>
+                        <p>Mission KaMuseo aims to be a space wherein artists can freely show their art pieces while keeping the feeling of nostalgia and vibes of a real museum. </p>
+                    </div>
+                    <div>
+                        <h1>Vision</h1>
+                        <p>To be an online platform that encourages arts and safe spaces for artists and to be known as a digital museum. Successfully influenced the other that digital art and traditional art are both important and deserve equal recognition</p>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="homeindex" id="constestf" style="display:none;">
+                <p class="bigTitle"><span id="contestTitle">CONTEST TITLE</span></p>
+                <hr>
+                <div class="aucCont">
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Tampuhan.jpg"><div class="aucTitle"><p id="auc-title">dsdddddddddcccccccdddddddddddddddddd</p><p id="auc-price">$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/Spoliarium.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                    <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
+                </div>
+            </div>
+            <div class="homeindex" id="artContestSubmit">
+                <form id="art-contest-submit">
+                    <div class="filedrop">
+                        <label class="dropFileArea"> Upload Photo Here.
+                            <input type="file" accept="image/*" id="submContest" hidden>
+                            <img id="uploadPreview" style="display:none;">
+                        </label>
+                    </div>
+                    <div class="editdesc">
+                        <input type="text" placeholder="Art Title" id="contestSubmitTitle">
+                        <textarea type="text" placeholder="Art Description" id="contestSubmitDesc"></textarea>
+                        <button>Submit</button>
+                    </div>
+                </form>
+            </div>
+            <footer>
+                <p>Group 1: Boomtarat<br>
+                <a href="samuelnathan4003@gmail.com">boomtarat@example.com</a>
+                &copy; 2026 Kamuseo</p>
+            </footer>
+        </div>
+
+        <!-- SIDE BAR -->
+        <div class="sidebar" id="sideBar">
+            <div id="smenu">
+                <ul>
+                    <li class="usr-pfp"><div class="userprofile"><img src="css/image/Juanluna.jpg"></div></li>
+                    <li><a class="navindex" onclick="navIndex(1)" id="nav1">Home</a></li>
+                    <li><a class="navindex" onclick="navIndex(2)" id="nav2">About Us</a></li>
+                    <li><a class="navindex" onclick="navIndex(3)" id="nav3" >Auction</a></li>
+                    <li><a class="navindex" onclick="navIndex(4)" id="nav4" style="display: none;">Artist</a></li>
+                    <li><label for="themes">Theme </label>
+                        <select id="themes">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="pink">Pink</option>
+                        <option value="ocean">Ocean</option>
+                        </select>
+                    </li>
+                    <li>
+                        <button onclick="changeTheme()">Select</button></li>
+                    <li><a class="navindex" style="margin-top: 15px;" id="nav4" onclick="logOut()">Log Out</a></li>
+                </ul>
+            </div>
+            <div id="saccount">
+                
+            </div>
+        </div>
+    </main>
+    <script src="js/supabase-client.js" type="module"></script>
+    <script src="js/home2.js"></script>
+</body>
+</html>

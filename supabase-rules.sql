@@ -1,0 +1,296 @@
+-- =============================================================================
+-- SUPABASE ROW LEVEL SECURITY (RLS) POLICIES
+-- Single Bucket Configuration with Public Read Access
+-- =============================================================================
+
+-- =============================================================================
+-- STORAGE BUCKET CONFIGURATION
+-- =============================================================================
+
+-- Create a single unified bucket for all files
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES 
+    ('storage', 'storage', true, 10485760, ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'])
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- STORAGE RLS POLICIES - Single Bucket
+-- =============================================================================
+
+-- 1. PUBLIC READ ACCESS
+-- Anyone can read any file (public access)
+CREATE POLICY "Public can view all files"
+    ON storage.objects FOR SELECT
+    USING (bucket_id = 'storage');
+
+-- 2. AUTHENTICATED USERS CAN UPLOAD
+-- Any authenticated user can upload files to their own folder
+CREATE POLICY "Authenticated users can upload files"
+    ON storage.objects FOR INSERT
+    WITH CHECK (
+        bucket_id = 'storage'
+        AND auth.uid() IS NOT NULL
+    );
+
+-- 3. FILE OWNERS CAN DELETE THEIR OWN FILES
+-- Users can delete files they uploaded
+CREATE POLICY "Users can delete own files"
+    ON storage.objects FOR DELETE
+    USING (
+        bucket_id = 'storage'
+        AND auth.uid()::TEXT = (storage.foldername(name))[1]
+    );
+
+-- 4. FILE OWNERS CAN UPDATE THEIR OWN FILES
+-- Users can update files they uploaded
+CREATE POLICY "Users can update own files"
+    ON storage.objects FOR UPDATE
+    USING (
+        bucket_id = 'storage'
+        AND auth.uid()::TEXT = (storage.foldername(name))[1]
+    );
+
+-- =============================================================================
+-- USER PROFILES TABLE
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS public.user_profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    first_name TEXT,
+    last_name TEXT,
+    role TEXT NOT NULL DEFAULT 'guest' CHECK (role IN ('admin', 'artist', 'guest')),
+    category TEXT,
+    bio TEXT,
+    avatar_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read user profiles
+CREATE POLICY "Anyone can view user profiles"
+    ON public.user_profiles FOR SELECT
+    USING (true);
+
+-- Users can create their own profile
+CREATE POLICY "Users can create own profile"
+    ON public.user_profiles FOR INSERT
+    WITH CHECK (auth.uid() = id);
+
+-- Users can update own profile, admins can update any
+CREATE POLICY "Users can update own profile"
+    ON public.user_profiles FOR UPDATE
+    USING (auth.uid() = id);
+
+-- Admins can delete profiles
+CREATE POLICY "Admins can delete profiles"
+    ON public.user_profiles FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- =============================================================================
+-- AUTO-PROFILE CREATION TRIGGER
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.user_profiles (id, email, username, role, category)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || LEFT(NEW.id::TEXT, 8)),
+        COALESCE(NEW.raw_user_meta_data->>'role', 'guest'),
+        NEW.raw_user_meta_data->>'category'
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================================================
+-- ARTWORKS TABLE
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS public.artworks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    artist_id UUID NOT NULL REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT NOT NULL,
+    image_path TEXT,
+    tags TEXT[] DEFAULT '{}',
+    is_public BOOLEAN NOT NULL DEFAULT true,
+    category TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.artworks ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read public artworks
+CREATE POLICY "Anyone can view public artworks"
+    ON public.artworks FOR SELECT
+    USING (is_public = true);
+
+-- Authenticated users can read all artworks
+CREATE POLICY "Authenticated users can view all artworks"
+    ON public.artworks FOR SELECT
+    USING (auth.role() = 'authenticated' OR artist_id = auth.uid());
+
+-- Artists and admins can create artworks
+CREATE POLICY "Artists can create artworks"
+    ON public.artworks FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role IN ('artist', 'admin')
+        )
+    );
+
+-- Artists can update their own artworks, admins can update any
+CREATE POLICY "Artists can update own artworks"
+    ON public.artworks FOR UPDATE
+    USING (
+        artist_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- Artists can delete their own artworks, admins can delete any
+CREATE POLICY "Artists can delete own artworks"
+    ON public.artworks FOR DELETE
+    USING (
+        artist_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- =============================================================================
+-- COMMENTS TABLE
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS public.comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    artwork_id UUID NOT NULL REFERENCES public.artworks(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view comments"
+    ON public.comments FOR SELECT
+    USING (true);
+
+CREATE POLICY "Authenticated users can create comments"
+    ON public.comments FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Users can update own comments"
+    ON public.comments FOR UPDATE
+    USING (user_id = auth.uid());
+
+CREATE POLICY "Users can delete own comments"
+    ON public.comments FOR DELETE
+    USING (user_id = auth.uid());
+
+-- =============================================================================
+-- REPORTS TABLE
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS public.reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reporter_id UUID NOT NULL REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+    reported_user_id UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL,
+    artwork_id UUID REFERENCES public.artworks(id) ON DELETE SET NULL,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'rejected')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view reports"
+    ON public.reports FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Users can create reports"
+    ON public.reports FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Admins can update reports"
+    ON public.reports FOR UPDATE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Admins can delete reports"
+    ON public.reports FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- =============================================================================
+-- HELPER FUNCTIONS
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.get_user_role()
+RETURNS TEXT AS $$
+DECLARE
+    user_role TEXT;
+BEGIN
+    SELECT role INTO user_role
+    FROM public.user_profiles
+    WHERE id = auth.uid();
+    RETURN COALESCE(user_role, 'guest');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_artist()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.user_profiles
+        WHERE id = auth.uid() AND role = 'artist'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.user_profiles
+        WHERE id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

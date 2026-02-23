@@ -1,0 +1,152 @@
+// =============================================================================
+// UNIFIED FIREBASE SECURITY RULES FOR KAMUSEO
+// =============================================================================
+// This file contains Firestore database rules only (Storage is handled by Supabase)
+// Deploy: firebase deploy --only firestore:rules
+// =============================================================================
+
+rules_version = '2';
+
+// =============================================================================
+// FIRESTORE DATABASE RULES
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Get user role from user profile
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    // Check if user is an artist
+    function isArtist() {
+      return getUserRole() == 'artist';
+    }
+    
+    // Check if user is an admin
+    function isAdmin() {
+      return getUserRole() == 'admin';
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Check if user is artist or admin
+    function isArtistOrAdmin() {
+      return isArtist() || isAdmin();
+    }
+    
+    // ============================================
+    // USER PROFILES COLLECTION
+    // ============================================
+    match /users/{userId} {
+      // Anyone can read user profiles (for displaying artist info)
+      allow read: if true;
+      
+      // Users can only create their own profile
+      allow create: if isAuthenticated() 
+                    && request.resource.id == request.auth.uid;
+      
+      // Users can update their own profile
+      // Admins can update any profile
+      allow update: if isAuthenticated() 
+                    && (isOwner(userId) || isAdmin());
+      
+      // Only admins can delete users
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+    
+    // ============================================
+    // ARTWORKS COLLECTION
+    // ============================================
+    match /artworks/{artworkId} {
+      // Anyone can read public artworks
+      allow read: if request.resource.data.isPublic == true 
+                   || (isAuthenticated() && (isOwner(request.resource.data.artistId) || isAdmin()));
+      
+      // Artists and Admins can create artworks
+      allow create: if isAuthenticated() && isArtistOrAdmin();
+      
+      // Only the artwork owner or admin can update
+      allow update: if isAuthenticated() 
+                    && (isOwner(request.resource.data.artistId) || isAdmin());
+      
+      // Only the artwork owner or admin can delete
+      allow delete: if isAuthenticated() 
+                    && (isOwner(resource.data.artistId) || isAdmin());
+    }
+    
+    // ============================================
+    // COMMENTS COLLECTION
+    // ============================================
+    match /comments/{commentId} {
+      // Anyone can read comments
+      allow read: if true;
+      
+      // Authenticated users can create comments
+      allow create: if isAuthenticated();
+      
+      // Comment owner or admin can update
+      allow update: if isAuthenticated() 
+                    && (isOwner(resource.data.userId) || isAdmin());
+      
+      // Comment owner or admin can delete
+      allow delete: if isAuthenticated() 
+                    && (isOwner(resource.data.userId) || isAdmin());
+    }
+    
+    // ============================================
+    // REPORTS COLLECTION
+    // ============================================
+    match /reports/{reportId} {
+      // Admins can read all reports
+      allow read: if isAuthenticated() && isAdmin();
+      
+      // Any authenticated user can create a report
+      allow create: if isAuthenticated();
+      
+      // Only admins can update reports
+      allow update: if isAuthenticated() && isAdmin();
+      
+      // Only admins can delete reports
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+  }
+}
+
+// =============================================================================
+// ROLE PERMISSIONS SUMMARY
+// =============================================================================
+/*
+FIRESTORE (Database):
+
+| Action              | Admin | Artist | Guest |
+|--------------------|-------|--------|-------|
+| View Public Art    |   ✓   |   ✓    |   ✓   |
+| View All Art       |   ✓   |   ✓    |   ✗   |
+| Create Artwork     |   ✓   |   ✓    |   ✗   |
+| Update Own Art     |   ✓   |   ✓    |   ✗   |
+| Delete Own Art     |   ✓   |   ✓    |   ✗   |
+| Update Any Art     |   ✓   |   ✗    |   ✗   |
+| Delete Any Art     |   ✓   |   ✗    |   ✗   |
+| View Profiles      |   ✓   |   ✓    |   ✓   |
+| Edit Own Profile  |   ✓   |   ✓    |   ✓   |
+| Edit Any Profile  |   ✓   |   ✗    |   ✗   |
+| Delete Users      |   ✓   |   ✗    |   ✗   |
+| Manage Reports    |   ✓   |   ✗    |   ✗   |
+
+NOTE: File storage is now handled by Supabase, not Firebase Storage.
+
+*/

@@ -1,0 +1,123 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        .scene {
+            display: flex;
+            flex-direction: column;
+           
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        .art {
+            width: 250px;
+            height: 350px;
+            background-color: lightgray;
+            box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+            margin: 50px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .floor {
+            will-change: transform, background-position;
+            position: fixed;
+            bottom: -75px;
+            left: -150px;
+            width: 150%;
+            height: 20vh;
+
+            background-image: url('css/image/floor.webp');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+
+            transform: perspective(1000px) rotateX(60deg);
+        }
+        .wall { 
+            width: fit-content;
+            height: 100vh;
+            display: grid;
+            align-items: center;
+            grid-auto-flow: column;
+            background-image: url('css/image/wall.webp');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            background-position: top left;
+        }
+        
+        .horizontal-scroll {
+            width: 100vw;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body>
+    <div class="horizontal-scroll">
+        <div class="wall">
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+            <div class="art">
+                <p>1</p>
+            </div>
+        </div>
+        <div class="floor">
+                        floor test
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+
+
+</body>
+</html>
