@@ -1,6 +1,4 @@
-// Supabase Storage Only Configuration
-// Authentication is handled by Firebase - Supabase is used ONLY for file storage
-// All auth-related code has been removed
+
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
