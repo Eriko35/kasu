@@ -48,6 +48,21 @@
   const ARTWORK_BUCKET = 'storage';
   
   // ============================================
+  // FILE VALIDATION CONSTANTS
+  // ============================================
+  
+  // Allowed image MIME types
+  const ALLOWED_IMAGE_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp'
+  ];
+  
+  // Maximum file size (10MB)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  
+  // ============================================
   // VALIDATION FUNCTIONS
   // ============================================
   
