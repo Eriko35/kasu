@@ -14,12 +14,13 @@
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   // Note: Auth & Firestore are used - file storage is handled by Supabase
   const firebaseConfig = {
-  apiKey: "AIzaSyDQ_poDvhiZFPmFpPFeEnOku1cGcNxKRRM",
-  authDomain: "kamuseo-dadf9.firebaseapp.com",
-  projectId: "kamuseo-dadf9",
-  messagingSenderId: "604608096712",
-  appId: "1:604608096712:web:21ecc54df78b2844b0f8fd",
-  measurementId: "G-ELWE92RRGY"
+  apiKey: "AIzaSyAj1k6vykPc_AcVy67_j31UGb2rRTzJH7o",
+  authDomain: "kakamuseo.firebaseapp.com",
+  projectId: "kakamuseo",
+  storageBucket: "kakamuseo.firebasestorage.app",
+  messagingSenderId: "428063366247",
+  appId: "1:428063366247:web:6de923e74ecc627e6f08c2",
+  measurementId: "G-JV9GSD9CX4"
 };
 
   // Initialize Firebase
