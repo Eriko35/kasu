@@ -30,12 +30,12 @@ CREATE POLICY "Public can view all files"
     USING (bucket_id = 'storage');
 
 -- 2. AUTHENTICATED USERS CAN UPLOAD
--- Any authenticated user can upload files to their own folder
+-- Allow uploads without Supabase authentication (Firebase Auth is used separately)
+-- Client-side validation is handled in the application
 CREATE POLICY "Authenticated users can upload files"
     ON storage.objects FOR INSERT
     WITH CHECK (
         bucket_id = 'storage'
-        AND auth.uid() IS NOT NULL
     );
 
 -- 3. FILE OWNERS CAN DELETE THEIR OWN FILES
