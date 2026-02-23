@@ -4,6 +4,10 @@ let bb = document.getElementById('themes');
 bb.value = themeSwitch;
 var fullAucBox = document.getElementById('fullAucBox');
 var fullAuc = document.getElementById('fullAucImg');
+// User role tracking
+let currentUserRole = null;
+let currentUserId = null;
+
 function showMenu() {
     menuVisible = !menuVisible;
     if (menuVisible) {
@@ -75,6 +79,11 @@ function navIndex(index) {
             document.getElementById('artistf').style.display = 'block';
             document.getElementById('nav4').classList.add("active");
             break;
+        case 5:
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('nav5').classList.add("active");
+            loadAdminPanel();
+            break;
         case 99:
             document.getElementById('fullAucBox').style.display = 'block';
             document.getElementById('nav4').classList.add("active");
@@ -111,6 +120,134 @@ if(!localStorage.getItem('loggedInUserId')) {
     window.location.href = "index.html";
 }
 
+// ============================================
+// ROLE-BASED VISIBILITY CONTROLLER
+// ============================================
+async function setupRoleBasedVisibility() {
+    const userId = localStorage.getItem('loggedInUserId');
+    if (!userId) {
+        // Guest user - hide contest features
+        hideGuestFeatures();
+        return;
+    }
+    
+    try {
+        // Get user profile to check role
+        const profile = await getUserProfile(userId);
+        if (profile.success) {
+            currentUserRole = profile.profile.role;
+            currentUserId = userId;
+            
+            if (currentUserRole === 'artist') {
+                // Show artist-specific features
+                showArtistFeatures();
+            } else if (currentUserRole === 'admin') {
+                // Show admin features
+                showAdminFeatures();
+            } else {
+                // Guest or other role - hide contest features
+                hideGuestFeatures();
+            }
+        } else {
+            hideGuestFeatures();
+        }
+    } catch (error) {
+        console.error('Error setting up role-based visibility:', error);
+        hideGuestFeatures();
+    }
+}
+
+function hideGuestFeatures() {
+    // Hide Join Contest button
+    const joinContestBtn = document.getElementById('joinContest');
+    if (joinContestBtn) {
+        joinContestBtn.style.display = 'none';
+    }
+    
+    // Hide Artist navigation
+    const artistNav = document.getElementById('nav4');
+    if (artistNav) {
+        artistNav.style.display = 'none';
+    }
+    
+    // Hide Admin Panel navigation
+    const adminNav = document.getElementById('nav5');
+    if (adminNav) {
+        adminNav.style.display = 'none';
+    }
+}
+
+function showArtistFeatures() {
+    // Show Join Contest button for authenticated users
+    const joinContestBtn = document.getElementById('joinContest');
+    if (joinContestBtn) {
+        joinContestBtn.style.display = 'block';
+    }
+    
+    // Show Artist navigation
+    const artistNav = document.getElementById('nav4');
+    if (artistNav) {
+        artistNav.style.display = 'block';
+    }
+    
+    // Show Admin Panel for artists
+    const adminNav = document.getElementById('nav5');
+    if (adminNav) {
+        adminNav.style.display = 'block';
+    }
+}
+
+function showAdminFeatures() {
+    // Show all features for admin
+    showArtistFeatures();
+}
+
+// ============================================
+// ADMIN PANEL FUNCTIONS
+// ============================================
+async function loadAdminPanel() {
+    const userId = localStorage.getItem('loggedInUserId');
+    if (!userId) return;
+    
+    try {
+        // Get all artworks by this artist
+        const result = await getArtworksByArtist(userId);
+        
+        if (result.success) {
+            const artworks = result.artworks;
+            const totalCount = artworks.length;
+            const localCount = artworks.filter(a => a.category === 'local').length;
+            const nationalCount = artworks.filter(a => a.category === 'national').length;
+            
+            // Update stats
+            document.getElementById('totalArtworks').textContent = totalCount;
+            document.getElementById('localArtworks').textContent = localCount;
+            document.getElementById('nationalArtworks').textContent = nationalCount;
+            
+            // Display artworks list
+            const artworksList = document.getElementById('myArtworksList');
+            if (artworksList) {
+                if (artworks.length === 0) {
+                    artworksList.innerHTML = '<p>No artworks uploaded yet.</p>';
+                } else {
+                    artworksList.innerHTML = artworks.map(artwork => `
+                        <div class="artwork-item">
+                            <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100px; height: 100px; object-fit: cover;">
+                            <div>
+                                <h4>${artwork.title}</h4>
+                                <p>Category: ${artwork.category || 'Not specified'}</p>
+                                <p>Created: ${new Date(artwork.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading admin panel:', error);
+    }
+}
+
 const input = document.getElementById("submContest");
 const preview = document.getElementById("uploadPreview");
 
@@ -135,9 +272,11 @@ if (artContestForm) {
         const fileInput = document.getElementById('submContest');
         const titleInput = document.getElementById('contestSubmitTitle');
         const descInput = document.getElementById('contestSubmitDesc');
+        const categoryInput = document.getElementById('artCategory');
         const file = fileInput.files[0];
         const title = titleInput.value.trim();
         const description = descInput.value.trim();
+        const category = categoryInput ? categoryInput.value : 'local';
         
         // Validation
         if (!file) {
@@ -147,6 +286,12 @@ if (artContestForm) {
         
         if (!title) {
             alert('Please enter a title for your artwork.');
+            return;
+        }
+        
+        // Validate category selection
+        if (!category) {
+            alert('Please select a category (Local or National Museum).');
             return;
         }
         
@@ -184,17 +329,18 @@ if (artContestForm) {
                 throw new Error(uploadResult.error);
             }
             
-            // Save artwork to Firestore
+            // Save artwork to Firestore with category
             const saveResult = await saveArtworkToFirestore(userId, {
                 title: title,
                 description: description,
                 imageUrl: uploadResult.url,
                 imagePath: uploadResult.path,
+                category: category,
                 isPublic: true
             });
             
             if (saveResult.success) {
-                alert('Artwork uploaded successfully!');
+                alert('Artwork uploaded successfully to ' + (category === 'local' ? 'Local Museum!' : 'National Museum!'));
                 // Reset the form
                 artContestForm.reset();
                 preview.style.display = 'none';
@@ -213,4 +359,23 @@ if (artContestForm) {
             submitBtn.disabled = false;
         }
     });
+}
+
+// ============================================
+// INITIALIZE ROLE-BASED VISIBILITY
+// ============================================
+// Run after Firebase is initialized
+if (typeof auth !== 'undefined') {
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            await setupRoleBasedVisibility();
+        } else {
+            hideGuestFeatures();
+        }
+    });
+} else {
+    // If auth not available yet, check after a delay
+    setTimeout(async () => {
+        await setupRoleBasedVisibility();
+    }, 1000);
 }
