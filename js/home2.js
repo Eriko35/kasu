@@ -96,8 +96,16 @@ document.querySelectorAll('.aucart').forEach(function(card) {
     });
 });
 function logOut() {
-    localStorage.removeItem('loggedInUserId');
-    window.location.href = "index.html";
+    // Use Firebase sign out
+    signOut(auth).then(() => {
+        localStorage.removeItem('loggedInUserId');
+        window.location.href = "index.html";
+    }).catch((error) => {
+        console.error('Sign out error:', error);
+        // Still redirect even if there's an error
+        localStorage.removeItem('loggedInUserId');
+        window.location.href = "index.html";
+    });
 }
 if(!localStorage.getItem('loggedInUserId')) {
     window.location.href = "index.html";
@@ -116,7 +124,7 @@ input.addEventListener("change", function () {
 });
 
 // ============================================
-// ARTWORK UPLOAD HANDLER
+// ARTWORK UPLOAD HANDLER (Firebase Auth + Supabase Storage)
 // ============================================
 
 const artContestForm = document.getElementById('art-contest-submit');
@@ -130,7 +138,6 @@ if (artContestForm) {
         const file = fileInput.files[0];
         const title = titleInput.value.trim();
         const description = descInput.value.trim();
-        const userId = localStorage.getItem('loggedInUserId');
         
         // Validation
         if (!file) {
@@ -143,11 +150,16 @@ if (artContestForm) {
             return;
         }
         
-        if (!userId) {
+        // Get the authenticated user from Firebase
+        const user = auth.currentUser;
+        
+        if (!user) {
             alert('You must be logged in to upload artwork.');
             window.location.href = 'index.html';
             return;
         }
+        
+        const userId = user.uid;
         
         // Show loading state
         const submitBtn = artContestForm.querySelector('button');
@@ -156,22 +168,41 @@ if (artContestForm) {
         submitBtn.disabled = true;
         
         try {
-            // Import and use the Supabase upload function
-            // The supabase-client.js should be loaded before this script
-            const result = await uploadAndSaveArtwork(file, userId, {
+            // Check if user is an artist using Firestore
+            const isArtistUser = await checkIsArtist(userId);
+            if (!isArtistUser) {
+                alert('Only artists can upload artwork. Please contact admin to upgrade your account.');
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+            
+            // Upload image to Supabase Storage
+            const uploadResult = await uploadArtworkImage(file, userId);
+            
+            if (!uploadResult.success) {
+                throw new Error(uploadResult.error);
+            }
+            
+            // Save artwork to Firestore
+            const saveResult = await saveArtworkToFirestore(userId, {
                 title: title,
                 description: description,
+                imageUrl: uploadResult.url,
+                imagePath: uploadResult.path,
                 isPublic: true
             });
             
-            if (result.success) {
+            if (saveResult.success) {
                 alert('Artwork uploaded successfully!');
                 // Reset the form
                 artContestForm.reset();
                 preview.style.display = 'none';
                 preview.src = '';
             } else {
-                alert('Upload failed: ' + result.error);
+                // Delete uploaded image if save failed
+                await deleteArtworkImage(uploadResult.path);
+                throw new Error(saveResult.error);
             }
         } catch (error) {
             console.error('Upload error:', error);
