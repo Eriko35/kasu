@@ -84,6 +84,10 @@ function navIndex(index) {
             document.getElementById('nav5').classList.add("active");
             loadAdminPanel();
             break;
+        case 6:
+            document.getElementById('artContestSubmit').style.display = 'block';
+            document.getElementById('nav6').classList.add("active");
+            break;
         case 99:
             document.getElementById('fullAucBox').style.display = 'block';
             document.getElementById('nav4').classList.add("active");
@@ -95,6 +99,17 @@ function navIndex(index) {
             document.getElementById('home').style.display = 'block';
             document.getElementById('nav1').classList.add("active");
     }
+}
+
+// ============================================
+// JOIN CONTEST BUTTON HANDLER
+// ============================================
+const joinContestBtn = document.getElementById('joinContest');
+if (joinContestBtn) {
+    joinContestBtn.addEventListener('click', function() {
+        // Navigate to contest submission page (case 6)
+        navIndex(6);
+    });
 }
 document.querySelectorAll('.aucart').forEach(function(card) {
     card.addEventListener('click', function() {
@@ -170,6 +185,12 @@ function hideGuestFeatures() {
         artistNav.style.display = 'none';
     }
     
+    // Hide Contest navigation
+    const contestNav = document.getElementById('nav6');
+    if (contestNav) {
+        contestNav.style.display = 'none';
+    }
+    
     // Hide Admin Panel navigation
     const adminNav = document.getElementById('nav5');
     if (adminNav) {
@@ -188,6 +209,12 @@ function showArtistFeatures() {
     const artistNav = document.getElementById('nav4');
     if (artistNav) {
         artistNav.style.display = 'block';
+    }
+    
+    // Show Contest navigation for artists
+    const contestNav = document.getElementById('nav6');
+    if (contestNav) {
+        contestNav.style.display = 'block';
     }
     
     // Show Admin Panel for artists
