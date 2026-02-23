@@ -221,9 +221,41 @@
                     <div class="editdesc">
                         <input type="text" placeholder="Art Title" id="contestSubmitTitle">
                         <textarea type="text" placeholder="Art Description" id="contestSubmitDesc"></textarea>
+                        <select id="artCategory" class="category-select">
+                            <option value="">Select Category</option>
+                            <option value="local">Local Museum</option>
+                            <option value="national">National Museum</option>
+                        </select>
                         <button>Submit</button>
                     </div>
                 </form>
+            </div>
+            
+            <!-- Admin Panel Section -->
+            <div class="homeindex" id="adminPanel" style="display:none;">
+                <div class="admin-container">
+                    <h2>Artist Admin Panel</h2>
+                    <div class="admin-stats">
+                        <div class="stat-card">
+                            <h3>My Artworks</h3>
+                            <p id="totalArtworks">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Local Museum</h3>
+                            <p id="localArtworks">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>National Museum</h3>
+                            <p id="nationalArtworks">0</p>
+                        </div>
+                    </div>
+                    <div class="admin-actions">
+                        <h3>Manage My Artworks</h3>
+                        <div id="myArtworksList" class="artworks-list">
+                            <!-- Artworks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
             </div>
             <footer>
                 <p>Group 1: Boomtarat<br>
@@ -241,6 +273,7 @@
                     <li><a class="navindex" onclick="navIndex(2)" id="nav2">About Us</a></li>
                     <li><a class="navindex" onclick="navIndex(3)" id="nav3" >Auction</a></li>
                     <li><a class="navindex" onclick="navIndex(4)" id="nav4" style="display: none;">Artist</a></li>
+                    <li><a class="navindex" onclick="navIndex(5)" id="nav5" style="display: none;">Admin Panel</a></li>
                     <li><label for="themes">Theme </label>
                         <select id="themes">
                         <option value="dark">Dark</option>
