@@ -47,6 +47,79 @@ p{
 * {
     box-sizing: border-box;
 }
+
+@media (max-width: 992px) {
+    .bigTitle {
+        font-size: 32px;
+    }
+    .aboutsection {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .aboutsection div {
+        width: 90%;
+        padding-left: 0;
+        padding-top: 20px;
+    }
+
+    .missionvision {
+        flex-direction: column;
+    }
+
+    .missionvision div {
+        width: 80%;
+        margin: 20px 0;
+        height: auto;
+    }
+
+    .full-auc {
+        flex-direction: column;
+    }
+
+    .imgauc, .descauc {
+        width: 90%;
+        min-width: 300px;
+    }
+
+    #artContestSubmit form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filedrop, .editdesc {
+        width: 90%;
+        padding: 10px;
+    }
+    .navindex {
+        font-size: 15px;
+
+    }
+    .sidebar {
+        min-width: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .bigTitle {
+        font-size: 32px;
+    }
+    .featured-artworks, .hallway-section {
+        flex-direction: column;
+    }
+
+    .art-featured, .entrance {
+        margin: 20px 0;
+    }
+    #smenu * {
+        font-size: 18px;
+    }
+    .sidebar {
+        min-width: 10px;
+    }
+}
+
 body {
     color: var(--text-color);
 /* NAVIGATION BAR*/
@@ -196,11 +269,10 @@ body {
     text-align: center;
 }
 .bigTitle {
-    font-size: 50px;
+    font-size: 60px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Improved Join Contest Button */
 #joinContest {
     background: linear-gradient(135deg, #e6a33c 0%, #c77b2a 100%);
     border: 2px solid #ffd700;
@@ -776,8 +848,3 @@ footer {
     color: #666;
 }
 
-/* Contest Navigation Active State */
-#nav6.active {
-    color: var(--gold-accent);
-    font-weight: bold;
-}
