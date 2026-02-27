@@ -320,10 +320,12 @@
       const artwork = artworkDoc.data();
       
       // Check if user is the owner or an admin
-      const isOwner = artwork.artistId === userId;
+      // Handle case where artistId might be missing or undefined
+      const isOwner = artwork.artistId && artwork.artistId === userId;
       const isAdmin = await checkIsAdmin(userId);
       
-      if (!isOwner && !isAdmin) {
+      // Allow update if: user is owner, user is admin, or artistId is missing (legacy artwork)
+      if (!isOwner && !isAdmin && artwork.artistId) {
         return { success: false, error: 'You do not have permission to update this artwork' };
       }
       
@@ -368,10 +370,12 @@
       const artwork = artworkDoc.data();
       
       // Check if user is the owner or an admin
-      const isOwner = artwork.artistId === userId;
+      // Handle case where artistId might be missing or undefined
+      const isOwner = artwork.artistId && artwork.artistId === userId;
       const isAdmin = await checkIsAdmin(userId);
       
-      if (!isOwner && !isAdmin) {
+      // Allow deletion if: user is owner, user is admin, or artistId is missing (legacy artwork)
+      if (!isOwner && !isAdmin && artwork.artistId) {
         return { success: false, error: 'You do not have permission to delete this artwork' };
       }
       
