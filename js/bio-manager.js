@@ -1,4 +1,4 @@
-qaa/**
+/**
  * Artist Bio Manager Module
  * Handles bio editing, version history, and preview functionality
  * Integrates with Firebase Firestore for data persistence
@@ -761,69 +761,89 @@ function showNotification(message, type) {
 // ============================================
 
 /**
+ * Wait for Firebase to be ready
+ */
+function waitForFirebase(callback, maxAttempts = 50) {
+    var attempts = 0;
+    var checkInterval = setInterval(function() {
+        attempts++;
+        if (window.db && window.doc && window.getDoc && window.setDoc) {
+            clearInterval(checkInterval);
+            callback();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            console.error('Firebase not loaded after ' + maxAttempts + ' attempts');
+        }
+    }, 100);
+}
+
+/**
  * Initialize bio manager when DOM is ready
  */
 function initBioManager() {
-    // Check if user is logged in
-    var userId = localStorage.getItem('loggedInUserId');
-    
-    if (userId) {
-        // Load and display current bio
-        updateArtistBioDisplay(userId);
-    }
+    // Wait for Firebase to be ready first
+    waitForFirebase(function() {
+        // Check if user is logged in
+        var userId = localStorage.getItem('loggedInUserId');
+        
+        if (userId) {
+            // Load and display current bio
+            updateArtistBioDisplay(userId);
+        }
 
-    // Set up character count for textarea
-    var textarea = document.getElementById('bioEditorTextarea');
-    if (textarea) {
-        textarea.addEventListener('input', function() {
-            var charCount = document.getElementById('bioCharCount');
-            if (charCount) {
-                charCount.textContent = this.value.length + '/' + MAX_BIO_LENGTH;
-                
-                // Visual warning when approaching limit
-                if (this.value.length > MAX_BIO_LENGTH * 0.9) {
-                    charCount.classList.add('warning');
-                } else {
-                    charCount.classList.remove('warning');
+        // Set up character count for textarea
+        var textarea = document.getElementById('bioEditorTextarea');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                var charCount = document.getElementById('bioCharCount');
+                if (charCount) {
+                    charCount.textContent = this.value.length + '/' + MAX_BIO_LENGTH;
+                    
+                    // Visual warning when approaching limit
+                    if (this.value.length > MAX_BIO_LENGTH * 0.9) {
+                        charCount.classList.add('warning');
+                    } else {
+                        charCount.classList.remove('warning');
+                    }
+                }
+            });
+        }
+
+        // Close modals on outside click
+        document.addEventListener('click', function(e) {
+            // Bio Editor Modal
+            var bioModal = document.getElementById('bioEditorModal');
+            if (bioModal && e.target === bioModal) {
+                closeBioEditor();
+            }
+
+            // Version History Modal
+            var versionModal = document.getElementById('versionHistoryModal');
+            if (versionModal && e.target === versionModal) {
+                closeVersionHistory();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                closeBioEditor();
+                closeVersionHistory();
+            }
+
+            // Ctrl+Enter to save
+            if (e.ctrlKey && e.key === 'Enter') {
+                var textarea = document.getElementById('bioEditorTextarea');
+                var bioModal = document.getElementById('bioEditorModal');
+                if (textarea && bioModal && bioModal.style.display === 'flex') {
+                    saveBioFromEditor();
                 }
             }
         });
-    }
 
-    // Close modals on outside click
-    document.addEventListener('click', function(e) {
-        // Bio Editor Modal
-        var bioModal = document.getElementById('bioEditorModal');
-        if (bioModal && e.target === bioModal) {
-            closeBioEditor();
-        }
-
-        // Version History Modal
-        var versionModal = document.getElementById('versionHistoryModal');
-        if (versionModal && e.target === versionModal) {
-            closeVersionHistory();
-        }
+        console.log('Bio Manager initialized');
     });
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // Escape to close modals
-        if (e.key === 'Escape') {
-            closeBioEditor();
-            closeVersionHistory();
-        }
-
-        // Ctrl+Enter to save
-        if (e.ctrlKey && e.key === 'Enter') {
-            var textarea = document.getElementById('bioEditorTextarea');
-            var bioModal = document.getElementById('bioEditorModal');
-            if (textarea && bioModal && bioModal.style.display === 'flex') {
-                saveBioFromEditor();
-            }
-        }
-    });
-
-    console.log('Bio Manager initialized');
 }
 
 // Auto-initialize when DOM is ready
