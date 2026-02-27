@@ -689,7 +689,20 @@
             <div class="homeindex" id="artistf" style="display:none;">
                 <!-- Artist Profile Header -->
                 <div class="artist-header">
-                    <div class="artist-profile-image">
+                    <div class="profile-picture-upload-wrapper" id="profilePictureWrapper" style="display: none;">
+                        <div class="artist-profile-image">
+                            <img id="artistAvatar" src="css/image/Juanluna.jpg" alt="Artist Profile">
+                        </div>
+                        <div class="profile-picture-overlay" onclick="document.getElementById('profilePictureInput').click()">
+                            <span>📷</span>
+                            <div class="profile-picture-overlay-text">Change Photo</div>
+                        </div>
+                        <div id="profilePictureLoading" class="profile-picture-loading" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                        <input type="file" id="profilePictureInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="handleProfilePictureUpload(event)">
+                    </div>
+                    <div class="artist-profile-image" id="artistProfileImageDefault">
                         <img id="artistAvatar" src="css/image/Juanluna.jpg" alt="Artist Profile">
                     </div>
                     <div class="artist-info">
