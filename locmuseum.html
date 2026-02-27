@@ -4,6 +4,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+        ::-webkit-scrollbar-track {
+            background: none;
+        }
         * {
             box-sizing: border-box;
         }
@@ -14,27 +17,49 @@
         .scene {
             display: flex;
             flex-direction: column;
-           
             perspective: 1000px;
             transform-style: preserve-3d;
         }
-        .art {
-            width: 250px;
-            height: 350px;
-            background-color: lightgray;
+        .art p {
+            background-color: beige;
+            padding: 15px;
             box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+        }
+        .artimg {
+            box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+            width: auto;
+            height: auto;
+            max-width: 400px;
+            max-height: 400px;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+            transform-origin: center center;
+        }
+        .art div {
+            width: 100%;
+            height: auto;
+        }
+        .art {
+            display: flex;flex-direction: column;
+            width: 400px;
+            height: 400px;
+            background-color: rgba(211, 211, 211, 0);
             margin: 50px;
             justify-content: center;
             align-items: center;
             text-align: center;
+            cursor: pointer;
+        }
+        .artimg:hover {
+            transform: translateY(-15px);
         }
         .floor {
             will-change: transform, background-position;
             position: fixed;
             bottom: -75px;
             left: -150px;
-            width: 120vw;
-            height: 20vh;
+            width: calc(105vw + 150px);
+            height: 25vh;
 
             background-image: url('css/image/floor.webp');
             background-repeat: repeat;
@@ -61,114 +86,214 @@
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
+        .bckbtn {
+            z-index: 2;
+            position: fixed;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.226);
+            width: 50px;
+            color: rgb(255, 255, 255);
+            text-decoration: none;
+            padding: 50vh 5px;
+        }
+        .fullArtBox {
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            display: flex;
+        }
+        .fullArtContainer {
+            width: 90%;
+            height: 90%;
+            margin: 2.5% 5%;
+            display: flex;
+            align-items: center;
+            background-image: url('css/image/paper.webp');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            background-position: top left;
+            overflow: hidden;
+        }
+        .artDiv {
+            width: 100%;
+            max-width: 40%;
+        }
+        .artDesc {
+            width: 60%;
+            max-width: 60%;
+            padding: 5%;
+        }
+        .artDesc p {
+            width: 100%;
+            white-space: pre-line;
+            overflow-wrap: break-word;
+        }
+        .artDiv img {
+            min-width: 200px;
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            margin: 5%;
+            box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+        .artTitleBox {
+            font-size: 30px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        .artTitleBox p{
+            margin: 0;
+        }
+        .fullArtTitle {
+            text-transform: uppercase;
+        }
+        #fullArtistProfile {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        #fullArtistProfile img {
+            width: 100%;
+            height: auto;
+        }
+        .artDescBox {
+            font-size: 18px;
+            font-weight: normal;
+        }
+        .artMainDesc {
+            Height: 350px;
+            overflow-y: auto;
+        }
+        #backFullArt {
+            position: fixed;
+            display: flex;
+            top: 10%;
+            right: 10%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="horizontal-scroll">
-        <div class="wall" id="artGallery">
-            <!-- Artworks will be loaded dynamically here -->
-            <div class="art">
-                <p>Loading artworks...</p>
+        
+        <div class="wall">
+            <div class="fullArtBox" style="display: none;">
+                <div class="fullArtContainer">
+                    <a id="backFullArt" onclick="closeFullArt()">X</a>
+                    <div class="artDiv">
+                        <img src="css/image/Spoliarium.jpg">
+                    </div>
+                    <div class="artDesc">
+                        <div class="artTitleBox">
+                            <div>
+                                <span>"<span class="fullArtTitle">Spoliarium</span>"</span> <div class="artDescBox"><span id="artistId">Juan Luna</span>, <span id="artDate">1884</span> </div> <div class="artDescBox"> Oil on canvas</div>
+                                <div class="artDescBox"> National Museum of Fine Arts, Manila</div>
+                            </div>
+                            <div id="fullArtistProfile"><img src="css/image/Juanluna.jpg" alt="">
+                            </div>
+                        </div>
+                        <div class="artMainDesc">
+                            <p id="art-desc">Spoliarium is a monumental oil painting by Filipino artist Juan Luna, completed in 1884. Measuring over seven meters wide, it is the largest painting in the collection of the National Museum of Fine Arts. The work won a gold medal at the Exposición Nacional de Bellas Artes in Madrid the same year.
+                                
+                            The painting depicts fallen gladiators being dragged into a dark chamber beneath a Roman arena. Their lifeless bodies are stripped of armor and dignity, while grieving women watch in anguish from the side. In contrast, Roman spectators and officials appear detached and indifferent, emphasizing the imbalance of power.
+
+                            Beyond its classical theme, Spoliarium is widely interpreted as an allegory of oppression during Spanish colonial rule in the Philippines. The suffering gladiators symbolize the Filipino people, while the indifferent Roman authorities represent colonial power. Through dramatic lighting, powerful composition, and emotional intensity, Luna conveys both tragedy and quiet resistance.
+
+                            Today, Spoliarium stands as a national cultural treasure and a powerful symbol of Filipino identity, sacrifice, and the struggle for dignity and freedom.</p>
+                        </div>
+                        
+                    </div>
+                </div>
+                
             </div>
+            <a class="bckbtn" href="home2.html">BACK</a>
         </div>
         <div class="floor">
-                        floor test
+            floor test
         </div>
     </div>
-        <script src="js/firebase.js" type="module"></script>
-        <script>
-            // ============================================
-            // DYNAMIC ARTWORK LOADER FOR LOCAL MUSEUM
-            // ============================================
+    <script src="js/firebase.js" type="module"></script>
+    <script src="js/script.js"></script>
+    <script>
+        // ============================================
+        // DYNAMIC ARTWORK LOADER FOR NATIONAL MUSEUM
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for Firebase to initialize
+            setTimeout(async function() {
+                await loadNationalMuseumArtworks();
+            }, 1500);
+        });
+        
+        async function loadNationalMuseumArtworks() {
+            console.log('Loading National Museum artworks...');
+            const wall = document.querySelector('.wall');
+            if (!wall) {
+                console.error('Wall container not found');
+                return;
+            }
             
-            document.addEventListener('DOMContentLoaded', async function() {
-                // Wait for Firebase to initialize
-                setTimeout(async function() {
-                    await loadLocalMuseumArtworks();
-                }, 1500);
-            });
-            
-            async function loadLocalMuseumArtworks() {
-                console.log('Loading Local Museum artworks...');
-                const wall = document.getElementById('artGallery');
-                if (!wall) {
-                    console.error('ArtGallery container not found');
+            try {
+                // Get all public artworks filtered by 'national' category
+                const result = await getPublicArtworks();
+                
+                if (!result.success) {
+                    console.error('Error loading artworks:', result.error);
                     return;
                 }
                 
-                try {
-                    // Get all public artworks filtered by 'local' category
-                    const result = await getPublicArtworks();
-                    
-                    if (!result.success) {
-                        console.error('Error loading artworks:', result.error);
-                        return;
-                    }
-                    
-                    // Filter for local museum artworks only
-                    const localArtworks = result.artworks.filter(art => art.category === 'local');
-                    
-                    console.log('Local artworks found:', localArtworks.length);
-                    
-                    if (localArtworks.length === 0) {
-                        wall.innerHTML = '<div class="art"><p>No artworks uploaded yet</p></div>';
-                        return;
-                    }
-                    
-                    // Clear loading message
-                    wall.innerHTML = '';
-                    
-                    // Create artwork elements for each local artwork
-                    localArtworks.forEach(function(artwork) {
-                        const artDiv = document.createElement('div');
-                        artDiv.className = 'art';
-                        artDiv.innerHTML = `
-                            <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
-                            <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
-                            <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description || ''}</p>
-                        `;
-                        wall.appendChild(artDiv);
-                    });
-                    
-                    console.log('Artworks loaded successfully!');
-                    
-                } catch (error) {
-                    console.error('Error loading artworks:', error);
+                // Filter for national museum artworks only
+                const nationalArtworks = result.artworks.filter(art => art.category === 'national');
+                
+                console.log('National artworks found:', nationalArtworks.length);
+                
+                if (nationalArtworks.length === 0) {
+                    console.log('No national artworks uploaded yet');
+                    return;
                 }
+                
+                // Find where the placeholder <p>1</p> elements start and remove them
+                const placeholderArts = wall.querySelectorAll('.art > p');
+                placeholderArts.forEach(function(p) {
+                    if (p.textContent === '1') {
+                        p.parentElement.remove();
+                    }
+                });
+                
+                // Also remove any empty art divs
+                wall.querySelectorAll('.art').forEach(function(artDiv) {
+                    if (artDiv.children.length === 0 || (artDiv.children.length === 1 && artDiv.querySelector('p') && artDiv.querySelector('p').textContent === '1')) {
+                        artDiv.remove();
+                    }
+                });
+                
+                // Create artwork elements for each national artwork
+                nationalArtworks.forEach(function(artwork) {
+                    const artDiv = document.createElement('div');
+                    artDiv.className = 'art';
+                    artDiv.innerHTML = `
+                        <div>
+                            <img class="artimg" src="${artwork.imageUrl}" alt="${artwork.title}">
+                        </div>
+                        <p>${artwork.title || 'Untitled'}</p>
+                    `;
+                    wall.appendChild(artDiv);
+                });
+                
+                console.log('National artworks loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error loading artworks:', error);
             }
-        </script>
-        <script>
-            const scroller = document.querySelector('.horizontal-scroll');
-            const floor = document.querySelector('.floor');
-            const step = 200; // increase this for faster arrow scroll
-
-            // Existing wheel scroll → horizontal movement
-            scroller.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                scroller.scrollLeft += e.deltaY; // down → right, up → left
-                syncFloor();
-            }, { passive: false });
-
-            // Keep floor synced if scrollLeft changes by other means
-            scroller.addEventListener('scroll', syncFloor);
-
-            function syncFloor() {
-                floor.style.backgroundPositionX = `${-scroller.scrollLeft}px`;
-            }
-
-            // Arrow key navigation
-            window.addEventListener('keydown', (e) => {
-                const max = scroller.scrollWidth - scroller.clientWidth;
-
-                if (e.key === "ArrowRight") {
-                    scroller.scrollLeft = Math.min(scroller.scrollLeft + step, max);
-                    syncFloor();
-                } else if (e.key === "ArrowLeft") {
-                    scroller.scrollLeft = Math.max(scroller.scrollLeft - step, 0);
-                    syncFloor();
-                }
-            });
-        </script>
+        }
+    </script>
 
 
 </body>
