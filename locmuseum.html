@@ -30,7 +30,7 @@
         }
         .floor {
             will-change: transform, background-position;
-            position: fixed;
+            /* Removed position: fixed to allow horizontal scrolling */
             bottom: -75px;
             left: -150px;
             width: 120vw;
@@ -82,7 +82,7 @@
                 <p>Loading artworks...</p>
             </div>
         </div>
-        <div class="floor">
+        <div class="floor" style="background-position-x: -461px;">
                         floor test
         </div>
     </div>
