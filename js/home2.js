@@ -189,7 +189,7 @@ if(!localStorage.getItem('loggedInUserId')) {
 async function setupRoleBasedVisibility() {
     const userId = localStorage.getItem('loggedInUserId');
     if (!userId) {
-        // Guest user - hide contest features
+        // Guest user - hide contest features completely
         hideGuestFeatures();
         return;
     }
@@ -207,8 +207,11 @@ async function setupRoleBasedVisibility() {
             } else if (currentUserRole === 'admin') {
                 // Show admin features
                 showAdminFeatures();
+            } else if (currentUserRole === 'guest') {
+                // Guest role - hide contest features completely
+                hideGuestFeatures();
             } else {
-                // Guest or other role - hide contest features
+                // Unknown role - hide contest features
                 hideGuestFeatures();
             }
         } else {
@@ -227,11 +230,16 @@ function hideGuestFeatures() {
         joinContestBtn.style.display = 'none';
     }
     
+    // Hide the entire contest section on home page
+    const contestSection = document.querySelector('.home-section');
+    if (contestSection) {
+        contestSection.style.display = 'none';
+    }
+    
     // Hide Artist navigation
     const artistNav = document.getElementById('nav4');
     if (artistNav) {
         artistNav.style.display = 'none';
-        joinContestBtn.style.display = 'block'
     }
     
     // Hide Contest navigation
@@ -245,13 +253,25 @@ function hideGuestFeatures() {
     if (adminNav) {
         adminNav.style.display = 'none';
     }
+    
+    // Also hide the contest section div directly if it exists
+    const contestf = document.getElementById('constestf');
+    if (contestf) {
+        contestf.style.display = 'none';
+    }
 }
 
 function showArtistFeatures() {
-    // Show Join Contest button for authenticated users
+    // Show Join Contest button for authenticated users (artist role)
     const joinContestBtn = document.getElementById('joinContest');
     if (joinContestBtn) {
         joinContestBtn.style.display = 'block';
+    }
+    
+    // Show the entire contest section on home page for artists
+    const contestSection = document.querySelector('.home-section');
+    if (contestSection) {
+        contestSection.style.display = 'block';
     }
     
     // Show Artist navigation
@@ -440,6 +460,15 @@ if (artContestForm) {
 // ============================================
 // INITIALIZE ROLE-BASED VISIBILITY
 // ============================================
+// Hide contest by default on page load for guests
+(function() {
+    // Initially hide contest section for guests (until authentication is checked)
+    const contestSection = document.querySelector('.home-section');
+    if (contestSection) {
+        contestSection.style.display = 'none';
+    }
+})();
+
 // Run after Firebase is initialized
 if (typeof auth !== 'undefined') {
     auth.onAuthStateChanged(async (user) => {
