@@ -4,8 +4,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kamuseo</title>
     <link rel="stylesheet" href="css/home.css">
+    <style>
+        /* Custom Notification Toast Styles */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            max-width: 350px;
+            line-height: 1.5;
+        }
+        
+        .notification-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification-toast.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-left: 4px solid #1e7e34;
+        }
+        
+        .notification-toast.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border-left: 4px solid #bd2130;
+        }
+        
+        .notification-toast.info {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-left: 4px solid #0069d9;
+        }
+        
+        .notification-toast.warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            border-left: 4px solid #ffc107;
+            color: #333;
+        }
+        
+        .notification-toast .notification-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+        
+        .notification-toast .notification-close:hover {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
+    <!-- Custom Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
     <nav class="navbar">
         <div class="navdiv">
             <div><img src="css/icons/icon-dark.webp"></div>
