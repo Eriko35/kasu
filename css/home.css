@@ -213,7 +213,8 @@ body {
     letter-spacing: 1px;
     box-shadow: 0 4px 15px rgba(230, 163, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
-    margin-top: 15px;
+    margin: 15px auto;
+    display: block;
     font-family: 'Times New Roman', serif;
 }
 #joinContest:hover {
