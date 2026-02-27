@@ -218,7 +218,134 @@
                 </div>
             </div>
             <div class="homeindex" id="artistf" style="display:none;">
-
+                <!-- Artist Profile Header -->
+                <div class="artist-header">
+                    <div class="artist-profile-image">
+                        <img id="artistAvatar" src="css/image/Juanluna.jpg" alt="Artist Profile">
+                    </div>
+                    <div class="artist-info">
+                        <h1 id="artistName">Artist Name</h1>
+                        <p id="artistUsername" class="artist-username">@artistusername</p>
+                        <p id="artistBio" class="artist-bio">Artist bio goes here...</p>
+                        <div class="artist-stats">
+                            <div class="stat-item">
+                                <span id="totalArtworksCount" class="stat-number">0</span>
+                                <span class="stat-label">Artworks</span>
+                            </div>
+                            <div class="stat-item">
+                                <span id="localArtworksCount" class="stat-number">0</span>
+                                <span class="stat-label">Local Museum</span>
+                            </div>
+                            <div class="stat-item">
+                                <span id="nationalArtworksCount" class="stat-number">0</span>
+                                <span class="stat-label">National Museum</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Navigation -->
+                <div class="artist-tabs">
+                    <button class="tab-btn active" data-tab="gallery" onclick="switchArtistTab('gallery')">
+                        <span class="tab-icon">🎨</span> Gallery
+                    </button>
+                    <button class="tab-btn" data-tab="about" onclick="switchArtistTab('about')">
+                        <span class="tab-icon">👤</span> About
+                    </button>
+                    <button class="tab-btn" data-tab="exhibitions" onclick="switchArtistTab('exhibitions')">
+                        <span class="tab-icon">🏛️</span> Exhibitions
+                    </button>
+                </div>
+                
+                <!-- Tab Content -->
+                <div class="artist-tab-content">
+                    <!-- Gallery Tab -->
+                    <div class="tab-panel active" id="tab-gallery">
+                        <div class="gallery-filters">
+                            <button class="filter-btn active" data-filter="all" onclick="filterGallery('all')">All</button>
+                            <button class="filter-btn" data-filter="local" onclick="filterGallery('local')">Local Museum</button>
+                            <button class="filter-btn" data-filter="national" onclick="filterGallery('national')">National Museum</button>
+                        </div>
+                        <div id="artistGalleryGrid" class="gallery-grid">
+                            <!-- Artworks will be loaded here -->
+                            <div class="loading-spinner">Loading artworks...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- About Tab -->
+                    <div class="tab-panel" id="tab-about">
+                        <div class="about-section">
+                            <h2>About the Artist</h2>
+                            <div class="about-card">
+                                <div class="about-row">
+                                    <div class="about-label">Full Name</div>
+                                    <div id="aboutFullName" class="about-value">Not specified</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Username</div>
+                                    <div id="aboutUsername" class="about-value">@artistusername</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Member Since</div>
+                                    <div id="aboutMemberSince" class="about-value">Unknown</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Category</div>
+                                    <div id="aboutCategory" class="about-value">Artist</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Bio</div>
+                                    <div id="aboutBio" class="about-value">No bio available</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exhibitions Tab -->
+                    <div class="tab-panel" id="tab-exhibitions">
+                        <div class="exhibitions-section">
+                            <h2>Exhibitions & Collections</h2>
+                            <div id="exhibitionsList" class="exhibitions-grid">
+                                <div class="exhibition-card">
+                                    <div class="exhibition-image">
+                                        <img src="css/image/Tampuhan.jpg" alt="Local Museum">
+                                    </div>
+                                    <div class="exhibition-info">
+                                        <h3>Local Museum Collection</h3>
+                                        <p id="localExhibitionCount">0 artworks</p>
+                                    </div>
+                                </div>
+                                <div class="exhibition-card">
+                                    <div class="exhibition-image">
+                                        <img src="css/image/Spoliarium.jpg" alt="National Museum">
+                                    </div>
+                                    <div class="exhibition-info">
+                                        <h3>National Museum Collection</h3>
+                                        <p id="nationalExhibitionCount">0 artworks</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Artist Artwork Modal -->
+                <div id="artistArtworkModal" class="artist-modal" style="display:none;">
+                    <div class="artist-modal-content">
+                        <span class="artist-modal-close" onclick="closeArtistModal()">&times;</span>
+                        <div class="artist-modal-grid">
+                            <div class="modal-image">
+                                <img id="modalArtworkImage" src="" alt="Artwork">
+                            </div>
+                            <div class="modal-details">
+                                <h2 id="modalArtworkTitle">Artwork Title</h2>
+                                <p id="modalArtworkCategory" class="artwork-category">Category</p>
+                                <p id="modalArtworkDescription" class="artwork-description">Description</p>
+                                <p id="modalArtworkDate" class="artwork-date">Created: </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="homeindex" id="aboutusf" style="display:none;">
                 <div class="aboutsection">
