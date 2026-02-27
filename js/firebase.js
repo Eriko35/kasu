@@ -204,6 +204,7 @@
         imageUrl: artworkData.imageUrl,
         imagePath: artworkData.imagePath || '',
         artistId: artistId,
+        category: artworkData.category || 'local',
         tags: artworkData.tags || [],
         createdAt: new Date().toISOString(),
         isPublic: artworkData.isPublic !== false
@@ -498,6 +499,80 @@
   }
   
   // Export functions globally for use in other files
+  
+  // Make functions available globally
+  window.showNotification = function(message, type = 'info', duration = 4000) {
+    // Check if home2.js has already defined this function
+    if (typeof window.showNotification === 'function' && window !== window.parent) {
+      // If already defined (by home2.js), just call it
+      return window.showNotification(message, type, duration);
+    }
+    
+    // Fallback: create a simple notification
+    let container = document.getElementById('notificationContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'notificationContainer';
+      container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;';
+      document.body.appendChild(container);
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = 'notification-toast ' + type;
+    notification.style.cssText = `
+      position: relative;
+      padding: 16px 24px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    `;
+    
+    if (type === 'success') {
+      notification.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+    } else if (type === 'error') {
+      notification.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+    } else if (type === 'info') {
+      notification.style.background = 'linear-gradient(135deg, #007bff, #0056b3)';
+    } else if (type === 'warning') {
+      notification.style.background = 'linear-gradient(135deg, #ffc107, #e0a800)';
+      notification.style.color = '#333';
+    }
+    
+    notification.innerHTML = `
+      <span class="notification-message">${message}</span>
+      <span class="notification-close" onclick="this.parentElement.remove()" style="position: absolute; top: 8px; right: 12px; cursor: pointer; font-size: 18px; font-weight: bold; opacity: 0.7;">&times;</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.opacity = '1';
+      notification.style.transform = 'translateY(0)';
+    }, 10);
+    
+    if (duration > 0) {
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, duration);
+    }
+  };
+  
+  window.showSuccess = function(message) { window.showNotification(message, 'success'); };
+  window.showError = function(message) { window.showNotification(message, 'error', 6000); };
+  window.showInfo = function(message) { window.showNotification(message, 'info'); };
+  window.showWarning = function(message) { window.showNotification(message, 'warning', 5000); };
   window.db = db;
   window.auth = auth;
   window.supabase = supabase;
@@ -558,6 +633,7 @@
         description: metadata.description || '',
         imageUrl: uploadResult.url,
         imagePath: uploadResult.path,
+        category: metadata.category || 'local',
         tags: metadata.tags || [],
         isPublic: metadata.isPublic !== false
       });
@@ -626,7 +702,7 @@
       // Validate file
       const validation = validateImageFile(file);
       if (!validation.isValid) {
-        alert(validation.error);
+        showError(validation.error);
         return;
       }
       
@@ -637,6 +713,7 @@
       // Try to get from form inputs if they exist
       const titleInput = document.getElementById('artworkTitle');
       const descInput = document.getElementById('artworkDescription');
+      const categoryInput = document.getElementById('artCategory');
       
       if (titleInput && titleInput.value) {
         title = titleInput.value;
@@ -644,7 +721,7 @@
         // Prompt user for title if not available
         title = prompt('Enter artwork title:');
         if (!title || title.trim() === '') {
-          alert('Title is required');
+          showError('Title is required');
           return;
         }
       }
@@ -665,22 +742,35 @@
         // Check if user is an artist
         const isArtistUser = await checkIsArtist(userId);
         if (!isArtistUser) {
-          alert('Only artists can upload artwork. Please contact admin to upgrade your account.');
+          showError('Only artists can upload artwork. Please contact admin to upgrade your account.');
           fileInput.parentElement.innerText = originalText;
           fileInput.disabled = false;
           return;
+        }
+        
+        // Get category from form or use default
+        let category = 'local';
+        if (categoryInput && categoryInput.value) {
+          category = categoryInput.value;
+        } else if (document.getElementById('artCategory')) {
+          // Try to get from the artCategory select element
+          const artCatSelect = document.getElementById('artCategory');
+          if (artCatSelect && artCatSelect.value) {
+            category = artCatSelect.value;
+          }
         }
         
         // Upload artwork
         const result = await uploadAndSaveArtwork(file, userId, {
           title: title.trim(),
           description: description.trim(),
+          category: category,
           tags: [],
           isPublic: true
         });
         
         if (result.success) {
-          alert('Artwork uploaded successfully!');
+          showSuccess('Artwork uploaded successfully!');
           // Reset form
           fileInput.value = '';
           // Clear preview if exists
@@ -693,7 +783,7 @@
           if (titleInput) titleInput.value = '';
           if (descInput) descInput.value = '';
         } else {
-          alert('Upload failed: ' + result.error);
+          showError('Upload failed: ' + result.error);
         }
         
         // Restore button
@@ -702,7 +792,7 @@
         
       } catch (error) {
         console.error('Upload error:', error);
-        alert('Upload failed: ' + error.message);
+        showError('Upload failed: ' + error.message);
         // Restore button
         fileInput.parentElement.innerText = 'Upload Photo Here.';
         fileInput.disabled = false;
