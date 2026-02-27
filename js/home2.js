@@ -8,6 +8,53 @@ var fullAuc = document.getElementById('fullAucImg');
 let currentUserRole = null;
 let currentUserId = null;
 
+// ============================================
+// CUSTOM NOTIFICATION SYSTEM
+// ============================================
+function showNotification(message, type = 'info', duration = 4000) {
+    // Remove existing notification container if it doesn't exist
+    let container = document.getElementById('notificationContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notificationContainer';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;';
+        document.body.appendChild(container);
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification-toast ${type}`;
+    notification.innerHTML = `
+        <span class="notification-message">${message}</span>
+        <span class="notification-close" onclick="this.parentElement.remove()">&times;</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Auto-remove after duration
+    if (duration > 0) {
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }, duration);
+    }
+}
+
+// Convenience methods
+function showSuccess(message) { showNotification(message, 'success'); }
+function showError(message) { showNotification(message, 'error', 6000); }
+function showInfo(message) { showNotification(message, 'info'); }
+function showWarning(message) { showNotification(message, 'warning', 5000); }
+
 function showMenu() {
     menuVisible = !menuVisible;
     if (menuVisible) {
@@ -308,18 +355,18 @@ if (artContestForm) {
         
         // Validation
         if (!file) {
-            alert('Please select an image file to upload.');
+            showError('Please select an image file to upload.');
             return;
         }
         
         if (!title) {
-            alert('Please enter a title for your artwork.');
+            showError('Please enter a title for your artwork.');
             return;
         }
         
         // Validate category selection
         if (!category) {
-            alert('Please select a category (Local or National Museum).');
+            showError('Please select a category (Local or National Museum).');
             return;
         }
         
@@ -327,7 +374,7 @@ if (artContestForm) {
         const user = auth.currentUser;
         
         if (!user) {
-            alert('You must be logged in to upload artwork.');
+            showError('You must be logged in to upload artwork.');
             window.location.href = 'index.html';
             return;
         }
@@ -344,7 +391,7 @@ if (artContestForm) {
             // Check if user is an artist using Firestore
             const isArtistUser = await checkIsArtist(userId);
             if (!isArtistUser) {
-                alert('Only artists can upload artwork. Please contact admin to upgrade your account.');
+                showError('Only artists can upload artwork. Please contact admin to upgrade your account.');
                 submitBtn.textContent = originalBtnText;
                 submitBtn.disabled = false;
                 return;
@@ -368,7 +415,7 @@ if (artContestForm) {
             });
             
             if (saveResult.success) {
-                alert('Artwork uploaded successfully to ' + (category === 'local' ? 'Local Museum!' : 'National Museum!'));
+                showSuccess('Artwork uploaded successfully to ' + (category === 'local' ? 'Local Museum!' : 'National Museum!'));
                 // Reset the form
                 artContestForm.reset();
                 preview.style.display = 'none';
@@ -380,7 +427,7 @@ if (artContestForm) {
             }
         } catch (error) {
             console.error('Upload error:', error);
-            alert('An error occurred during upload: ' + error.message);
+            showError('An error occurred during upload: ' + error.message);
         } finally {
             // Restore button state
             submitBtn.textContent = originalBtnText;
