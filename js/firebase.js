@@ -1225,7 +1225,8 @@
   window.deleteProfilePicture = deleteProfilePicture;
   window.uploadAndUpdateProfilePicture = uploadAndUpdateProfilePicture;
   window.generateProfilePicturePath = generateProfilePicturePath;
- 
+
+
   // Profile picture validation constants
   window.MAX_PROFILE_PICTURE_SIZE = MAX_PROFILE_PICTURE_SIZE;
   window.ALLOWED_IMAGE_TYPES = ALLOWED_IMAGE_TYPES;

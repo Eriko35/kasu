@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Profile - Kamuseo</title>
+    <link rel="stylesheet" href="css/stylesheet.css">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #e94560;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --text-light: #f8f9fa;
+            --text-muted: #adb5bd;
+            --card-bg: #1f1f3a;
+            --border-color: #2d2d4a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.2) 0%, transparent 100%);
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(233, 69, 96, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), #d63d56);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+            position: relative;
+            z-index: 1;
+            border: 4px solid var(--text-light);
+            box-shadow: 0 10px 40px rgba(233, 69, 96, 0.4);
+        }
+
+        .profile-name {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-username {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-role {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--accent-color);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-category {
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding: 30px 40px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Navigation */
+        .profile-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-nav-btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-nav-btn:hover, .profile-nav-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Content Sections */
+        .profile-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 28px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Artworks Grid */
+        .artworks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .artwork-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .artwork-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-color);
+        }
+
+        .artwork-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .artwork-info {
+            padding: 20px;
+        }
+
+        .artwork-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .artwork-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .artwork-price {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .artwork-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-draft { background: #6c757d; }
+        .status-active { background: var(--success-color); }
+        .status-sold { background: var(--accent-color); }
+        .status-ended { background: var(--warning-color); color: #333; }
+
+        /* Museum References */
+        .museum-refs-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .museum-ref-card {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: var(--secondary-color);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .museum-ref-card:hover {
+            transform: translateX(10px);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .museum-ref-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .museum-ref-info {
+            flex: 1;
+        }
+
+        .museum-ref-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .museum-ref-museum {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .museum-ref-inspiration {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .museum-ref-date {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Biography Section */
+        .bio-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .bio-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-muted);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state img {
+            width: 150px;
+            height: 150px;
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px 25px;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            animation: toastSlide 0.4s ease;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: #dc3545; }
+
+        @keyframes toastSlide {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 30px;
+            }
+
+            .profile-nav {
+                flex-wrap: wrap;
+            }
+
+            .artworks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Profile Header -->
+    <header class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <h1 class="profile-name" id="profileName">Loading...</h1>
+        <p class="profile-username" id="profileUsername">@username</p>
+        <span class="profile-role" id="profileRole">Artist</span>
+        <p class="profile-category" id="profileCategory">Category</p>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="statArtworks">0</div>
+            <div class="stat-label">Artworks</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statAuctions">0</div>
+            <div class="stat-label">Auctions</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statSold">0</div>
+            <div class="stat-label">Sold</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statRevenue">$0</div>
+            <div class="stat-label">Revenue</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="profile-nav">
+        <button class="profile-nav-btn active" onclick="switchSection('artworks')">Artworks</button>
+        <button class="profile-nav-btn" onclick="switchSection('museum')">Museum References</button>
+        <button class="profile-nav-btn" onclick="switchSection('bio')">Biography</button>
+    </nav>
+
+    <!-- Content -->
+    <main class="profile-content">
+        <!-- Artworks Section -->
+        <section class="content-section active" id="section-artworks">
+            <h2 class="section-title">Artwork Collection</h2>
+            <div class="artworks-grid" id="artworksGrid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Museum References Section -->
+        <section class="content-section" id="section-museum">
+            <h2 class="section-title">Museum References & Inspiration</h2>
+            <div class="museum-refs-container" id="museumRefsContainer">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Biography Section -->
+        <section class="content-section" id="section-bio">
+            <h2 class="section-title">Artist Biography</h2>
+            <div class="bio-section">
+                <p class="bio-text" id="bioText">
+                    This artist hasn't added a biography yet.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        // Import auction system
+        import { 
+            getArtistArtworks,
+            auth,
+            db,
+            currentUser
+        } from './js/auction-system.js';
+
+        import { 
+            getDoc, 
+            doc,
+            collection,
+            getDocs,
+            query,
+            where
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        import { 
+            getAuth, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+        // Get profile ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        let profileUserId = urlParams.get('id');
+
+        // Global state
+        let userData = null;
+        let artworks = [];
+        let isOwnProfile = false;
+
+        // Initialize
+        onAuthStateChanged(auth, async (user) => {
+            if (!profileUserId) {
+                // If no ID in URL, show own profile
+                profileUserId = user?.uid;
+            }
+            
+            isOwnProfile = user && user.uid === profileUserId;
+            
+            if (profileUserId) {
+                await loadProfile(profileUserId);
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Load profile
+        async function loadProfile(userId) {
+            try {
+                // Load user data
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (!userDoc.exists()) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+
+                userData = { id: userDoc.id, ...userDoc.data() };
+                renderProfileHeader();
+                
+                // Load artworks
+                artworks = await getArtistArtworks(userId);
+                renderArtworks();
+                updateStats();
+
+                // Load museum references
+                renderMuseumReferences();
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showToast('Error loading profile', 'error');
+            }
+        }
+
+        // Render profile header
+        function renderProfileHeader() {
+            const initials = userData.firstName?.charAt(0) || '?';
+            document.getElementById('profileAvatar').textContent = initials;
+            document.getElementById('profileName').textContent = `${userData.firstName} ${userData.lastName}`;
+            document.getElementById('profileUsername').textContent = `@${userData.username || 'user'}`;
+            document.getElementById('profileRole').textContent = userData.role || 'Artist';
+            document.getElementById('profileCategory').textContent = userData.category || '';
+            
+            if (userData.bio) {
+                document.getElementById('bioText').textContent = userData.bio;
+            }
+        }
+
+        // Render artworks
+        function renderArtworks() {
+            const grid = document.getElementById('artworksGrid');
+            
+            if (artworks.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <h3>No Artworks Yet</h3>
+                        <p>This artist hasn't uploaded any artworks.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = artworks.map(artwork => {
+                const price = artwork.currentBid || artwork.startingBid || 0;
+                const statusClass = `status-${artwork.auctionStatus}`;
+                
+                return `
+                    <div class="artwork-card">
+                        <img src="${artwork.imageUrl || 'css/image/placeholder.webp'}" 
+                             alt="${artwork.title}" 
+                             class="artwork-image">
+                        <div class="artwork-info">
+                            <h3 class="artwork-title">${artwork.title}</h3>
+                            <div class="artwork-meta">
+                                <span class="artwork-price">$${price.toFixed(2)}</span>
+                                <span class="artwork-status ${statusClass}">${artwork.auctionStatus}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('statArtworks').textContent = artworks.length;
+            document.getElementById('statAuctions').textContent = artworks.filter(a => a.auctionStatus === 'active').length;
+            
+            const sold = artworks.filter(a => a.auctionStatus === 'sold');
+            document.getElementById('statSold').textContent = sold.length;
+            
+            const revenue = sold.reduce((sum, a) => sum + (a.finalPrice || a.currentBid || 0), 0);
+            document.getElementById('statRevenue').textContent = `$${revenue.toFixed(2)}`;
+        }
+
+        // Render museum references
+        async function renderMuseumReferences() {
+            const container = document.getElementById('museumRefsContainer');
+            
+            // Get all artworks with museum references
+            const artworksWithRefs = artworks.filter(a => a.museumReferences && a.museumReferences.length > 0);
+            
+            if (artworksWithRefs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Museum References</h3>
+                        <p>This artist hasn't referenced any museum artworks.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let refsHtml = '';
+            artworksWithRefs.forEach(artwork => {
+                artwork.museumReferences.forEach(ref => {
+                    refsHtml += `
+                        <div class="museum-ref-card">
+                            <img src="${ref.artworkImage || 'css/image/placeholder.webp'}" 
+                                 alt="${ref.artworkTitle}" 
+                                 class="museum-ref-image">
+                            <div class="museum-ref-info">
+                                <h3 class="museum-ref-title">${ref.artworkTitle}</h3>
+                                <p class="museum-ref-museum">📍 ${ref.museumName}</p>
+                                ${ref.inspiration ? `<p class="museum-ref-inspiration">"${ref.inspiration}"</p>` : ''}
+                                <p class="museum-ref-date">Inspired by: ${artwork.title}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            container.innerHTML = refsHtml || `
+                <div class="empty-state">
+                    <h3>No Museum References</h3>
+                </div>
+            `;
+        }
+
+        // Section switching
+        window.switchSection = function(section) {
+            document.querySelectorAll('.profile-nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`section-${section}`).classList.add('active');
+        };
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 4000);
+        }
+    </script>
+</body>
+</html>

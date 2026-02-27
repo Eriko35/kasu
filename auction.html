@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Auctions - Kamuseo</title>
+    <link rel="stylesheet" href="css/stylesheet.css">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #e94560;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --text-light: #f8f9fa;
+            --text-muted: #adb5bd;
+            --card-bg: #1f1f3a;
+            --border-color: #2d2d4a;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .auction-nav {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .nav-brand img {
+            width: 45px;
+            height: 45px;
+        }
+
+        .nav-brand h1 {
+            font-size: 28px;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(180deg, rgba(233, 69, 96, 0.1) 0%, transparent 100%);
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--text-light) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 25px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.3);
+        }
+
+        /* Auction Grid */
+        .auction-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 40px 60px;
+        }
+
+        .section-title {
+            font-size: 32px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--border-color), transparent);
+        }
+
+        .auction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        /* Auction Card */
+        .auction-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .auction-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border-color: var(--accent-color);
+        }
+
+        .auction-image-container {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+        }
+
+        .auction-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .auction-card:hover .auction-image {
+            transform: scale(1.1);
+        }
+
+        .auction-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(233, 69, 96, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .time-remaining {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--warning-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auction-details {
+            padding: 25px;
+        }
+
+        .auction-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        .artist-name {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .artist-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .bid-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .current-bid-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .current-bid-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .bid-count {
+            text-align: right;
+        }
+
+        .bid-count .number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .bid-count .label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .auction-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-bid {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--accent-color), #d63d56);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-bid:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-bid:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-view {
+            padding: 15px 25px;
+            background: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-view:hover {
+            background: var(--border-color);
+        }
+
+        /* Featured Section */
+        .featured-section {
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.1) 0%, transparent 100%);
+            margin: 40px 0;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .featured-card {
+            position: relative;
+        }
+
+        .featured-card.gold {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 20;
+        }
+
+        .gold .featured-badge {
+            background: linear-gradient(135deg, var(--gold), #b8860b);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .silver .featured-badge {
+            background: linear-gradient(135deg, var(--silver), #808080);
+            box-shadow: 0 5px 20px rgba(192, 192, 192, 0.5);
+        }
+
+        .bronze .featured-badge {
+            background: linear-gradient(135deg, var(--bronze), #8b4513);
+            box-shadow: 0 5px 20px rgba(205, 127, 50, 0.5);
+        }
+
+        /* Bid Modal */
+        .bid-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bid-modal-overlay.active {
+            display: flex;
+        }
+
+        .bid-modal {
+            background: var(--card-bg);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border: 2px solid var(--accent-color);
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .bid-modal h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .bid-modal .artwork-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .bid-info-display {
+            background: var(--secondary-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .bid-info-display .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .bid-info-display .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .bid-input-group {
+            margin: 25px 0;
+        }
+
+        .bid-input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .bid-input-wrapper {
+            position: relative;
+        }
+
+        .bid-input-wrapper span {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+
+        .bid-input {
+            width: 100%;
+            padding: 18px 20px 18px 50px;
+            font-size: 24px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--secondary-color);
+            color: var(--text-light);
+            font-weight: 700;
+        }
+
+        .bid-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .min-bid-note {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .bid-modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .bid-modal-actions .btn {
+            flex: 1;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-place-bid {
+            background: linear-gradient(135deg, var(--success-color), #20c997);
+            border: none;
+            color: white;
+        }
+
+        .btn-place-bid:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .btn-cancel:hover {
+            background: var(--border-color);
+        }
+
+        /* Real-time indicator */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(40, 167, 69, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state img {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: var(--text-light);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px 25px;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            animation: toastSlide 0.4s ease;
+            border-left: 4px solid var(--accent-color);
+            min-width: 300px;
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: #dc3545; }
+        .toast.warning { border-left-color: var(--warning-color); }
+
+        @keyframes toastSlide {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .featured-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            
+            .featured-card.gold {
+                transform: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .auction-nav {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .auction-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                padding: 15px;
+            }
+            
+            .auction-container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="auction-nav">
+        <a href="home.html" class="nav-brand">
+            <img src="css/icons/logo.webp" alt="Kamuseo">
+            <h1>KAMUSEO</h1>
+        </a>
+        <div class="nav-links">
+            <a href="home.html" class="nav-link">Home</a>
+            <a href="auction.html" class="nav-link active">Auctions</a>
+            <a href="natmuseum.html" class="nav-link">Museum</a>
+            <a href="artist-dashboard.html" class="nav-link">My Dashboard</a>
+            <a href="index.html" class="nav-link">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Live Art Auctions</h1>
+        <p>Discover extraordinary artworks from talented artists around the world. Place your bids and own a piece of history.</p>
+    </section>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterAuctions('all')">All Auctions</button>
+        <button class="filter-btn" onclick="filterAuctions('ending')">Ending Soon</button>
+        <button class="filter-btn" onclick="filterAuctions('new')">New Listings</button>
+        <button class="filter-btn" onclick="filterAuctions('high')">Highest Bids</button>
+    </div>
+
+    <!-- Featured Section -->
+    <section class="featured-section">
+        <div class="section-title" style="text-align: center; justify-content: center; margin-bottom: 40px;">
+            <span class="live-indicator"><span class="live-dot"></span> Featured Auctions</span>
+        </div>
+        <div class="featured-grid" id="featuredGrid">
+            <!-- Dynamic content -->
+        </div>
+    </section>
+
+    <!-- Main Auction Grid -->
+    <section class="auction-container">
+        <div class="section-title">
+            <span>Active Auctions</span>
+            <span style="font-size: 16px; color: var(--text-muted);" id="auctionCount">0 items</span>
+        </div>
+        <div class="auction-grid" id="auctionGrid">
+            <div class="loading" style="grid-column: 1/-1;">
+                <div class="spinner" style="width: 50px; height: 50px; border-width: 4px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bid Modal -->
+    <div class="bid-modal-overlay" id="bidModal">
+        <div class="bid-modal">
+            <h2>Place Your Bid</h2>
+            <img id="bidArtworkImage" class="artwork-preview" src="" alt="Artwork">
+            <h3 id="bidArtworkTitle" style="text-align: center; margin-bottom: 5px;"></h3>
+            <p id="bidArtistName" style="text-align: center; color: var(--text-muted); margin-bottom: 20px;"></p>
+            
+            <div class="bid-info-display">
+                <div>
+                    <div class="label">Current Bid</div>
+                    <div class="value" id="bidCurrentAmount">$0</div>
+                </div>
+                <div>
+                    <div class="label">Your Bid</div>
+                    <div class="value" id="bidYourAmount">-</div>
+                </div>
+                <div>
+                    <div class="label">Minimum Increment</div>
+                    <div class="value" id="bidIncrement">$1</div>
+                </div>
+                <div>
+                    <div class="label">Time Remaining</div>
+                    <div class="value" id="bidTimeRemaining" style="color: var(--warning-color);">-</div>
+                </div>
+            </div>
+
+            <div class="bid-input-group">
+                <label>Your Bid Amount</label>
+                <div class="bid-input-wrapper">
+                    <span>$</span>
+                    <input type="number" id="bidAmountInput" class="bid-input" placeholder="0.00" step="0.01">
+                </div>
+                <p class="min-bid-note" id="minBidNote">Minimum bid: $0</p>
+            </div>
+
+            <div class="bid-modal-actions">
+                <button class="btn btn-cancel" onclick="closeBidModal()">Cancel</button>
+                <button class="btn btn-place-bid" onclick="submitBid()">Place Bid</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import auction system
+        import { 
+            getActiveAuctions, 
+            getEndingSoonAuctions,
+            getArtwork,
+            placeBid,
+            subscribeToBids,
+            auth,
+            db
+        } from './js/auction-system.js';
+
+        import { 
+            getDoc, 
+            doc 
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // Global state
+        let allAuctions = [];
+        let currentFilter = 'all';
+        let selectedArtwork = null;
+        let unsubscribeBids = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadAuctions();
+        });
+
+        // Load auctions
+        async function loadAuctions() {
+            try {
+                allAuctions = await getActiveAuctions();
+                renderAuctions();
+                renderFeatured();
+                updateAuctionCount();
+            } catch (error) {
+                console.error('Error loading auctions:', error);
+                showToast('Error loading auctions', 'error');
+            }
+        }
+
+        // Render auctions
+        function renderAuctions() {
+            const grid = document.getElementById('auctionGrid');
+            let auctions = [...allAuctions];
+
+            // Apply filter
+            switch(currentFilter) {
+                case 'ending':
+                    auctions.sort((a, b) => {
+                        const dateA = a.auctionEndDate?.toDate?.() || new Date(a.auctionEndDate);
+                        const dateB = b.auctionEndDate?.toDate?.() || new Date(b.auctionEndDate);
+                        return dateA - dateB;
+                    });
+                    break;
+                case 'new':
+                    auctions.sort((a, b) => {
+                        const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
+                        const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
+                        return dateB - dateA;
+                    });
+                    break;
+                case 'high':
+                    auctions.sort((a, b) => (b.currentBid || 0) - (a.currentBid || 0));
+                    break;
+            }
+
+            if (auctions.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <h3>No Active Auctions</h3>
+                        <p>Check back soon for new listings!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = auctions.map(artwork => createAuctionCard(artwork)).join('');
+        }
+
+        // Render featured (top 3 ending soon)
+        function renderFeatured() {
+            const grid = document.getElementById('featuredGrid');
+            const featured = allAuctions.slice(0, 3);
+            
+            if (featured.length < 3) {
+                document.querySelector('.featured-section').style.display = 'none';
+                return;
+            }
+
+            const badges = ['🥇', '🥈', '🥉'];
+            const classes = ['gold', 'silver', 'bronze'];
+
+            grid.innerHTML = featured.map((artwork, index) => {
+                const card = createAuctionCard(artwork, true);
+                return `
+                    <div class="featured-card ${classes[index]}">
+                        <div class="featured-badge">${badges[index]}</div>
+                        ${card}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Create auction card HTML
+        function createAuctionCard(artwork, isFeatured = false) {
+            const currentBid = artwork.currentBid || artwork.startingBid || 0;
+            const timeRemaining = getTimeRemaining(artwork.auctionEndDate);
+            const isEnded = timeRemaining === 'Ended';
+            
+            // Get initials from artist name
+            const initials = artwork.artistName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A';
+
+            return `
+                <div class="auction-card">
+                    <div class="auction-image-container">
+                        <img src="${artwork.imageUrl || 'css/image/placeholder.webp'}" 
+                             alt="${artwork.title}" 
+                             class="auction-image">
+                        <div class="auction-badge">LIVE</div>
+                        <div class="time-remaining">
+                            <span>⏱️</span> ${timeRemaining}
+                        </div>
+                    </div>
+                    <div class="auction-details">
+                        <h3 class="auction-title">${artwork.title}</h3>
+                        <p class="artist-name">
+                            <span class="artist-avatar">${initials}</span>
+                            ${artwork.artistName}
+                        </p>
+                        <div class="bid-info">
+                            <div>
+                                <div class="current-bid-label">Current Bid</div>
+                                <div class="current-bid-amount">$${currentBid.toFixed(2)}</div>
+                            </div>
+                            <div class="bid-count">
+                                <div class="number">${artwork.bidCount || 0}</div>
+                                <div class="label">bids</div>
+                            </div>
+                        </div>
+                        <div class="auction-actions">
+                            <button class="btn-bid" 
+                                    onclick="openBidModal('${artwork.id}')"
+                                    ${isEnded || !auth.currentUser ? 'disabled' : ''}>
+                                ${!auth.currentUser ? 'Sign In to Bid' : 'Place Bid'}
+                            </button>
+                            <button class="btn-view" onclick="viewArtworkDetails('${artwork.id}')">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Calculate time remaining
+        function getTimeRemaining(endDate) {
+            if (!endDate) return 'No end date';
+            
+            const end = endDate.toDate ? endDate.toDate() : new Date(endDate);
+            const now = new Date();
+            const diff = end - now;
+
+            if (diff <= 0) return 'Ended';
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (days > 0) return `${days}d ${hours}h`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes}m`;
+        }
+
+        // Update auction count
+        function updateAuctionCount() {
+            document.getElementById('auctionCount').textContent = `${allAuctions.length} items`;
+        }
+
+        // Filter auctions
+        window.filterAuctions = function(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderAuctions();
+        };
+
+        // Open bid modal
+        window.openBidModal = async function(artworkId) {
+            if (!auth.currentUser) {
+                showToast('Please sign in to place bids', 'warning');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            selectedArtwork = await getArtwork(artworkId);
+            if (!selectedArtwork) {
+                showToast('Artwork not found', 'error');
+                return;
+            }
+
+            const currentBid = selectedArtwork.currentBid || selectedArtwork.startingBid || 0;
+            const minBid = currentBid + (selectedArtwork.bidIncrement || 1);
+
+            document.getElementById('bidArtworkImage').src = selectedArtwork.imageUrl;
+            document.getElementById('bidArtworkTitle').textContent = selectedArtwork.title;
+            document.getElementById('bidArtistName').textContent = selectedArtwork.artistName;
+            document.getElementById('bidCurrentAmount').textContent = `$${currentBid.toFixed(2)}`;
+            document.getElementById('bidIncrement').textContent = `$${(selectedArtwork.bidIncrement || 1).toFixed(2)}`;
+            document.getElementById('bidTimeRemaining').textContent = getTimeRemaining(selectedArtwork.auctionEndDate);
+            document.getElementById('bidAmountInput').value = minBid.toFixed(2);
+            document.getElementById('minBidNote').textContent = `Minimum bid: $${minBid.toFixed(2)}`;
+            document.getElementById('bidYourAmount').textContent = `$${minBid.toFixed(2)}`;
+
+            // Update your bid when input changes
+            document.getElementById('bidAmountInput').addEventListener('input', function() {
+                document.getElementById('bidYourAmount').textContent = `$${parseFloat(this.value || 0).toFixed(2)}`;
+            });
+
+            // Subscribe to real-time bid updates
+            if (unsubscribeBids) unsubscribeBids();
+            unsubscribeBids = subscribeToBids(artworkId, (bids) => {
+                if (bids.length > 0) {
+                    const highestBid = bids[0];
+                    const newCurrent = highestBid.amount;
+                    const newMin = newCurrent + (selectedArtwork.bidIncrement || 1);
+                    
+                    document.getElementById('bidCurrentAmount').textContent = `$${newCurrent.toFixed(2)}`;
+                    document.getElementById('minBidNote').textContent = `Minimum bid: $${newMin.toFixed(2)}`;
+                }
+            });
+
+            document.getElementById('bidModal').classList.add('active');
+        };
+
+        // Close bid modal
+        window.closeBidModal = function() {
+            document.getElementById('bidModal').classList.remove('active');
+            if (unsubscribeBids) {
+                unsubscribeBids();
+                unsubscribeBids = null;
+            }
+            selectedArtwork = null;
+        };
+
+        // Submit bid
+        window.submitBid = async function() {
+            if (!selectedArtwork || !auth.currentUser) {
+                showToast('Please sign in to place bids', 'error');
+                return;
+            }
+
+            const bidAmount = parseFloat(document.getElementById('bidAmountInput').value);
+            const currentBid = selectedArtwork.currentBid || selectedArtwork.startingBid || 0;
+            const minBid = currentBid + (selectedArtwork.bidIncrement || 1);
+
+            if (bidAmount < minBid) {
+                showToast(`Minimum bid is $${minBid.toFixed(2)}`, 'error');
+                return;
+            }
+
+            try {
+                const result = await placeBid(selectedArtwork.id, bidAmount);
+                
+                if (result.success) {
+                    showToast('Bid placed successfully!', 'success');
+                    closeBidModal();
+                    loadAuctions();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error placing bid', 'error');
+            }
+        };
+
+        // View artwork details
+        window.viewArtworkDetails = function(artworkId) {
+            window.location.href = `artwork-detail.html?id=${artworkId}`;
+        };
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Auto-refresh time remaining every minute
+        setInterval(() => {
+            renderAuctions();
+            renderFeatured();
+        }, 60000);
+    </script>
+</body>
+</html>
