@@ -97,13 +97,15 @@
    * Generate unique file path for artwork
    * @param {string} userId - Artist's user ID
    * @param {string} fileName - Original file name
+   * @param {string} category - Category (local or national)
    * @returns {string} - Unique file path
    */
-  function generateArtworkPath(userId, fileName) {
+  function generateArtworkPath(userId, fileName, category = 'local') {
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const extension = fileName.split('.').pop();
-    return `artworks/${userId}/${timestamp}-${randomSuffix}.${extension}`;
+    // Include category in the path: artworks/{category}/{userId}/{timestamp}-{random}.{ext}
+    return `artworks/${category}/${userId}/${timestamp}-${randomSuffix}.${extension}`;
   }
   
   // ============================================
@@ -114,9 +116,10 @@
    * Upload artwork image to Supabase Storage
    * @param {File} file - The image file to upload
    * @param {string} userId - The artist's user ID
+   * @param {string} category - The category (local or national)
    * @returns {Promise<Object>} - Result with download URL or error
    */
-  async function uploadArtworkImage(file, userId) {
+  async function uploadArtworkImage(file, userId, category = 'local') {
     try {
       // Validate file
       const validation = validateImageFile(file);
@@ -124,8 +127,8 @@
         throw new Error(validation.error);
       }
       
-      // Generate unique file path
-      const filePath = generateArtworkPath(userId, file.name);
+      // Generate unique file path with category
+      const filePath = generateArtworkPath(userId, file.name, category);
       
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
@@ -615,13 +618,16 @@
    * Complete artwork upload flow (upload + save to database)
    * @param {File} file - The image file
    * @param {string} userId - The artist's user ID
-   * @param {Object} metadata - Artwork metadata (title, description, tags)
+   * @param {Object} metadata - Artwork metadata (title, description, tags, category)
    * @returns {Promise<Object>} - Complete result
    */
   async function uploadAndSaveArtwork(file, userId, metadata) {
     try {
-      // Step 1: Upload image to Supabase Storage
-      const uploadResult = await uploadArtworkImage(file, userId);
+      // Get category, default to 'local'
+      const category = metadata.category || 'local';
+      
+      // Step 1: Upload image to Supabase Storage with category
+      const uploadResult = await uploadArtworkImage(file, userId, category);
       
       if (!uploadResult.success) {
         return uploadResult;
