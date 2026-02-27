@@ -61,11 +61,22 @@
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
+        .bckbtn {
+            z-index: 2;
+            position: fixed;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.226);
+            width: 50px;
+            color: rgb(255, 255, 255);
+            text-decoration: none;
+            padding: 50vh 5px;
+        }
     </style>
 </head>
 <body>
     <div class="horizontal-scroll">
         <div class="wall" id="artGallery">
+            <a class="bckbtn" href="home2.html">BACK</a>
             <!-- Artworks will be loaded dynamically here -->
             <div class="art">
                 <p>Loading artworks...</p>
@@ -102,7 +113,15 @@
                     
                     if (!result || !result.success) {
                         console.error('Error loading artworks:', result?.error);
-                        wall.innerHTML = '<div class="art"><p>Error loading artworks</p></div>';
+                        const backButton = wall.querySelector('.bckbtn');
+                        wall.innerHTML = '';
+                        if (backButton) {
+                            wall.appendChild(backButton);
+                        }
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'art';
+                        errorDiv.innerHTML = '<p>Error loading artworks</p>';
+                        wall.appendChild(errorDiv);
                         return;
                     }
                     
@@ -111,12 +130,24 @@
                     console.log('Local artworks found:', localArtworks.length);
                     
                     if (localArtworks.length === 0) {
-                        wall.innerHTML = '<div class="art"><p>No artworks uploaded yet</p></div>';
+                        const backButton = wall.querySelector('.bckbtn');
+                        wall.innerHTML = '';
+                        if (backButton) {
+                            wall.appendChild(backButton);
+                        }
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'art';
+                        emptyDiv.innerHTML = '<p>No artworks uploaded yet</p>';
+                        wall.appendChild(emptyDiv);
                         return;
                     }
                     
-                    // Clear loading message
+                    // Clear loading message but preserve the back button
+                    const backButton = wall.querySelector('.bckbtn');
                     wall.innerHTML = '';
+                    if (backButton) {
+                        wall.appendChild(backButton);
+                    }
                     
                     // Create artwork elements for each local artwork
                     localArtworks.forEach(function(artwork) {
