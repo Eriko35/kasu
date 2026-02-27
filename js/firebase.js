@@ -663,6 +663,63 @@
     }
   }
   
+  /**
+   * Creates a new user with validation to prevent admin domain hijacking.
+   * This should be used for your public sign-up form.
+   * @param {string} email - User's email.
+   * @param {string} password - User's password.
+   * @param {object} profileData - Additional data like username, firstName, lastName.
+   * @returns {Promise<Object>} - Result of the registration.
+   */
+  async function registerNewUser(email, password, profileData) {
+    // Security check: Prevent creating accounts with @admin.com domain
+    if (email.toLowerCase().endsWith('@admin.com')) {
+        return { success: false, error: 'Registration with this email domain is not allowed.' };
+    }
+
+    try {
+        // Create user in Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Create user profile in Firestore with 'artist' role by default
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, {
+            email: user.email,
+            username: profileData.username || `user_${user.uid.substring(0, 6)}`,
+            firstName: profileData.firstName || '',
+            lastName: profileData.lastName || '',
+            role: 'artist', // Default new sign-ups to 'artist'
+            createdAt: new Date().toISOString()
+        });
+
+        return { success: true, userId: user.uid };
+    } catch (error) {
+        console.error('User registration error:', error);
+        return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * One-time function to create the special admin account.
+   * Run this from your browser's developer console once: createSpecialAdminAccount()
+   */
+  async function createSpecialAdminAccount() {
+      const email = 'admin@admin.com';
+      const password = 'admin123';
+      try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          const userDocRef = doc(db, 'users', user.uid);
+          await setDoc(userDocRef, { email: user.email, username: 'admin', role: 'admin', createdAt: new Date().toISOString() });
+          console.log('Admin account created successfully! UID:', user.uid);
+          alert('Admin account admin@admin.com created successfully!');
+      } catch (error) {
+          console.error('Error creating admin account:', error.message);
+          alert('Failed to create admin account: ' + error.message);
+      }
+  }
+
   // Export functions globally for use in other files
   
   // Make functions available globally
@@ -778,6 +835,8 @@
   window.toggleArtworkVote = toggleArtworkVote;
   window.getUserVotes = getUserVotes;
   window.initializeVotingSystem = initializeVotingSystem;
+  window.registerNewUser = registerNewUser; // For your sign-up page
+  window.createSpecialAdminAccount = createSpecialAdminAccount; // For one-time console execution
   
   /**
    * Complete artwork upload flow (upload + save to database)

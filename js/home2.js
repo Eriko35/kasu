@@ -612,8 +612,9 @@ if (artContestForm) {
         try {
             // Check if user is an artist using Firestore
             const isArtistUser = await checkIsArtist(userId);
-            if (!isArtistUser) {
-                showError('Only artists can upload artwork. Please contact admin to upgrade your account.');
+            const isAdminUser = await checkIsAdmin(userId);
+            if (!isArtistUser && !isAdminUser) {
+                showError('Only artists and admins can upload artwork.');
                 submitBtn.textContent = originalBtnText;
                 submitBtn.disabled = false;
                 return;
