@@ -195,8 +195,6 @@
                                 <span>"<span class="fullArtTitle">Spoliarium</span>"</span> <div class="artDescBox"><span id="artistId">Juan Luna</span>, <span id="artDate">1884</span> </div> <div class="artDescBox"> Oil on canvas</div>
                                 <div class="artDescBox"> National Museum of Fine Arts, Manila</div>
                             </div>
-                            <div id="fullArtistProfile"><img src="css/image/Juanluna.jpg" alt="">
-                            </div>
                         </div>
                         <div class="artMainDesc">
                             <p id="art-desc">Spoliarium is a monumental oil painting by Filipino artist Juan Luna, completed in 1884. Measuring over seven meters wide, it is the largest painting in the collection of the National Museum of Fine Arts. The work won a gold medal at the Exposición Nacional de Bellas Artes in Madrid the same year.
@@ -332,6 +330,7 @@
                 nationalArtworks.forEach(function(artwork) {
                     const artDiv = document.createElement('div');
                     artDiv.className = 'art';
+                    artDiv.onclick = function() { showFullArt(artwork); };
                     artDiv.innerHTML = `
                         <div>
                             <img class="artimg" src="${artwork.imageUrl}" alt="${artwork.title}">
@@ -345,6 +344,47 @@
                 
             } catch (error) {
                 console.error('Error loading artworks:', error);
+            }
+        }
+
+        async function showFullArt(artwork) {
+            const container = document.querySelector('.fullArtBox');
+            const img = container.querySelector('.artDiv img');
+            const title = container.querySelector('.fullArtTitle');
+            const artistSpan = document.getElementById('artistId');
+            const dateSpan = document.getElementById('artDate');
+            const desc = document.getElementById('art-desc');
+            
+            // Set content
+            img.src = artwork.imageUrl;
+            title.textContent = artwork.title || 'Untitled';
+            desc.textContent = artwork.description || 'No description available.';
+            
+            // Format date
+            const date = new Date(artwork.createdAt);
+            dateSpan.textContent = !isNaN(date.getTime()) ? date.getFullYear() : '';
+            
+            // Reset artist info while loading
+            artistSpan.textContent = 'Loading...';
+            
+            // Show container
+            container.style.display = 'flex';
+            
+            // Fetch artist details
+            if (artwork.artistId) {
+                try {
+                    const result = await getUserProfile(artwork.artistId);
+                    if (result.success) {
+                        artistSpan.textContent = result.profile.username || (result.profile.firstName + ' ' + result.profile.lastName);
+                    } else {
+                        artistSpan.textContent = 'Unknown Artist';
+                    }
+                } catch (e) {
+                    console.error('Error fetching artist:', e);
+                    artistSpan.textContent = 'Unknown Artist';
+                }
+            } else {
+                artistSpan.textContent = 'Unknown Artist';
             }
         }
     </script>
