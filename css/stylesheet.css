@@ -338,8 +338,10 @@
     .artwork {
         background: #EDE1E1;
         height: 300px;
-        width: 200px;
+        width: 300px;
+        object-fit: cover;
         box-shadow: 0 0px 8px rgba(0, 0, 0, 0.35);
+        display: block;
 
     }
     .home-section {
