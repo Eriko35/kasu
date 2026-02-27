@@ -397,8 +397,8 @@ if (artContestForm) {
                 return;
             }
             
-            // Upload image to Supabase Storage
-            const uploadResult = await uploadArtworkImage(file, userId);
+            // Upload image to Supabase Storage with category
+            const uploadResult = await uploadArtworkImage(file, userId, category);
             
             if (!uploadResult.success) {
                 throw new Error(uploadResult.error);
