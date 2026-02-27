@@ -1,5 +1,3 @@
-
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // ============================================
@@ -68,7 +66,7 @@ function generateArtworkPath(userId, fileName) {
   const timestamp = Date.now();
   const randomSuffix = Math.random().toString(36).substring(2, 8);
   const extension = fileName.split('.').pop();
-  return `${userId}/${timestamp}-${randomSuffix}.${extension}`;
+  return `artworks/${userId}/${timestamp}-${randomSuffix}.${extension}`;
 }
 
 // ============================================
