@@ -735,15 +735,16 @@
       
       try {
         // Show loading indicator
-        const originalText = fileInput.parentElement.innerText;
-        fileInput.parentElement.innerText = 'Uploading...';
+        const parentElement = fileInput.parentElement;
+        const originalText = parentElement ? parentElement.innerText : '';
+        if (parentElement) parentElement.innerText = 'Uploading...';
         fileInput.disabled = true;
         
         // Check if user is an artist
         const isArtistUser = await checkIsArtist(userId);
         if (!isArtistUser) {
           showError('Only artists can upload artwork. Please contact admin to upgrade your account.');
-          fileInput.parentElement.innerText = originalText;
+          if (fileInput.parentElement) fileInput.parentElement.innerText = originalText;
           fileInput.disabled = false;
           return;
         }
@@ -787,14 +788,14 @@
         }
         
         // Restore button
-        fileInput.parentElement.innerText = originalText;
+        if (fileInput.parentElement) fileInput.parentElement.innerText = originalText;
         fileInput.disabled = false;
         
       } catch (error) {
         console.error('Upload error:', error);
         showError('Upload failed: ' + error.message);
         // Restore button
-        fileInput.parentElement.innerText = 'Upload Photo Here.';
+        if (fileInput.parentElement) fileInput.parentElement.innerText = 'Upload Photo Here.';
         fileInput.disabled = false;
       }
     });
