@@ -443,22 +443,98 @@
     }
   }
   
+  // ============================================
+  // ALLOWED PROFILE FIELDS (whitelist)
+  // ============================================
+  
+  // These are the only fields that users can update in their profile
+  const ALLOWED_PROFILE_FIELDS = [
+    'firstName',
+    'lastName',
+    'username', 
+    'category',
+    'bio',
+    'avatarUrl',
+    'phoneNumber',
+    'address',
+    'dateOfBirth',
+    'website',
+    'socialLinks'
+  ];
+  
+  // Fields that users CANNOT modify (system fields)
+  const PROTECTED_PROFILE_FIELDS = [
+    'role',
+    'uid',
+    'email',
+    'createdAt',
+    'isAdmin',
+    'isArtist',
+    'permissions',
+    'badges'
+  ];
+  
+  /**
+   * Filter profile data to only allow updating specific fields
+   * @param {Object} profileData - Raw profile data from user
+   * @returns {Object} - Filtered profile data with only allowed fields
+   */
+  function filterProfileData(profileData) {
+    const filtered = {};
+    
+    for (const key of ALLOWED_PROFILE_FIELDS) {
+      if (profileData.hasOwnProperty(key)) {
+        filtered[key] = profileData[key];
+      }
+    }
+    
+    return filtered;
+  }
+  
+  /**
+   * Validate that no protected fields are being modified
+   * @param {Object} profileData - Profile data to validate
+   * @returns {Object} - Validation result with isValid and error message
+   */
+  function validateProfileUpdate(profileData) {
+    for (const key of Object.keys(profileData)) {
+      if (PROTECTED_PROFILE_FIELDS.includes(key)) {
+        return {
+          isValid: false,
+          error: `Cannot modify protected field: ${key}`
+        };
+      }
+    }
+    return { isValid: true, error: null };
+  }
+  
   /**
    * Update user profile
    * @param {string} userId - The user's ID
-   * @param {Object} profileData - Updated profile data
+   * @param {Object} profileData - Updated profile data (only profile fields allowed)
    * @returns {Promise<Object>} - Result with updated profile or error
    */
   async function updateUserProfile(userId, profileData) {
     try {
+      // Validate that no protected fields are being modified
+      const validation = validateProfileUpdate(profileData);
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+      
+      // Filter to only allow specific profile fields
+      const filteredData = filterProfileData(profileData);
+      
+      // Check if there's any valid data to update
+      if (Object.keys(filteredData).length === 0) {
+        return { success: false, error: 'No valid profile fields to update' };
+      }
+      
       const userDocRef = doc(db, 'users', userId);
       
+      // Add updated timestamp
       const updateData = {
-        firstName: profileData.firstName,
-        lastName: profileData.lastName,
-        username: profileData.username,
-        category: profileData.category,
-        bio: profileData.bio || '',
+        ...filteredData,
         updatedAt: new Date().toISOString()
       };
       
