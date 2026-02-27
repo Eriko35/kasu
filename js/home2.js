@@ -126,6 +126,8 @@ function navIndex(index) {
         case 4:
             document.getElementById('artistf').style.display = 'block';
             document.getElementById('nav4').classList.add("active");
+            // Load artist page data when navigating to artist tab
+            loadArtistPage();
             break;
         case 5:
             document.getElementById('adminPanel').style.display = 'block';
@@ -484,3 +486,284 @@ if (typeof auth !== 'undefined') {
         await setupRoleBasedVisibility();
     }, 1000);
 }
+
+// ============================================
+// ARTIST PAGE FUNCTIONS
+// ============================================
+
+// Current artist data
+let currentArtistData = null;
+let artistArtworks = [];
+let currentFilter = 'all';
+
+/**
+ * Switch between artist page tabs
+ * @param {string} tabName - The tab name to switch to
+ */
+function switchArtistTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.artist-tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Update tab panels
+    document.querySelectorAll('.artist-tab-content .tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    document.getElementById('tab-' + tabName).classList.add('active');
+    
+    // Load tab content if needed
+    if (tabName === 'gallery') {
+        renderArtistGallery();
+    }
+}
+
+/**
+ * Filter gallery by category
+ * @param {string} filter - Filter category ('all', 'local', 'national')
+ */
+function filterGallery(filter) {
+    currentFilter = filter;
+    
+    // Update filter buttons
+    document.querySelectorAll('.gallery-filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === filter) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Re-render gallery with filter
+    renderArtistGallery();
+}
+
+/**
+ * Load artist profile and artworks
+ * @param {string} artistId - The artist's user ID (optional, defaults to current user)
+ */
+async function loadArtistPage(artistId = null) {
+    const userId = artistId || localStorage.getItem('loggedInUserId');
+    
+    if (!userId) {
+        showError('Please log in to view artist profile');
+        return;
+    }
+    
+    try {
+        // Get artist profile
+        const profileResult = await getUserProfile(userId);
+        
+        if (profileResult.success) {
+            currentArtistData = profileResult.profile;
+            updateArtistHeader(currentArtistData);
+            updateArtistAbout(currentArtistData);
+        } else {
+            // Use default data if profile not found
+            currentArtistData = {
+                firstName: 'Artist',
+                lastName: 'Name',
+                username: 'artist',
+                bio: 'No bio available',
+                role: 'artist',
+                createdAt: new Date().toISOString()
+            };
+            updateArtistHeader(currentArtistData);
+            updateArtistAbout(currentArtistData);
+        }
+        
+        // Get artist artworks
+        const artworksResult = await getArtworksByArtist(userId);
+        
+        if (artworksResult.success) {
+            artistArtworks = artworksResult.artworks;
+            updateArtistStats(artistArtworks);
+            renderArtistGallery();
+            updateExhibitions(artistArtworks);
+        } else {
+            artistArtworks = [];
+            updateArtistStats([]);
+            renderArtistGallery();
+        }
+        
+    } catch (error) {
+        console.error('Error loading artist page:', error);
+        showError('Failed to load artist profile');
+    }
+}
+
+/**
+ * Update artist header with profile data
+ * @param {Object} profile - Artist profile data
+ */
+function updateArtistHeader(profile) {
+    // Update name
+    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
+    document.getElementById('artistName').textContent = fullName || 'Artist Name';
+    
+    // Update username
+    document.getElementById('artistUsername').textContent = '@' + (profile.username || 'artist');
+    
+    // Update bio
+    document.getElementById('artistBio').textContent = profile.bio || 'No bio available';
+    
+    // Update avatar
+    if (profile.avatarUrl) {
+        document.getElementById('artistAvatar').src = profile.avatarUrl;
+    }
+}
+
+/**
+ * Update artist about section
+ * @param {Object} profile - Artist profile data
+ */
+function updateArtistAbout(profile) {
+    // Full name
+    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
+    document.getElementById('aboutFullName').textContent = fullName || 'Not specified';
+    
+    // Username
+    document.getElementById('aboutUsername').textContent = '@' + (profile.username || 'artist');
+    
+    // Member since
+    if (profile.createdAt) {
+        const memberDate = new Date(profile.createdAt);
+        document.getElementById('aboutMemberSince').textContent = memberDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long'
+        });
+    } else {
+        document.getElementById('aboutMemberSince').textContent = 'Unknown';
+    }
+    
+    // Category
+    document.getElementById('aboutCategory').textContent = profile.category || 'Artist';
+    
+    // Bio
+    document.getElementById('aboutBio').textContent = profile.bio || 'No bio available';
+}
+
+/**
+ * Update artist statistics
+ * @param {Array} artworks - Array of artwork objects
+ */
+function updateArtistStats(artworks) {
+    const total = artworks.length;
+    const local = artworks.filter(a => a.category === 'local').length;
+    const national = artworks.filter(a => a.category === 'national').length;
+    
+    document.getElementById('totalArtworksCount').textContent = total;
+    document.getElementById('localArtworksCount').textContent = local;
+    document.getElementById('nationalArtworksCount').textContent = national;
+}
+
+/**
+ * Update exhibitions section
+ * @param {Array} artworks - Array of artwork objects
+ */
+function updateExhibitions(artworks) {
+    const local = artworks.filter(a => a.category === 'local').length;
+    const national = artworks.filter(a => a.category === 'national').length;
+    
+    document.getElementById('localExhibitionCount').textContent = local + ' artwork' + (local !== 1 ? 's' : '');
+    document.getElementById('nationalExhibitionCount').textContent = national + ' artwork' + (national !== 1 ? 's' : '');
+}
+
+/**
+ * Render artist gallery with filter
+ */
+function renderArtistGallery() {
+    const galleryGrid = document.getElementById('artistGalleryGrid');
+    
+    if (!galleryGrid) return;
+    
+    // Filter artworks
+    let filteredArtworks = artistArtworks;
+    if (currentFilter !== 'all') {
+        filteredArtworks = artistArtworks.filter(a => a.category === currentFilter);
+    }
+    
+    // Check if empty
+    if (filteredArtworks.length === 0) {
+        galleryGrid.innerHTML = `
+            <div class="empty-gallery">
+                <p>No artworks found</p>
+                <p class="empty-subtext">Upload your first artwork to get started!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Render artworks
+    galleryGrid.innerHTML = filteredArtworks.map(artwork => `
+        <div class="gallery-item" onclick="openArtistArtworkModal('${artwork.id}')">
+            <div class="gallery-item-image">
+                <img src="${artwork.imageUrl}" alt="${artwork.title}" loading="lazy">
+                <div class="gallery-item-overlay">
+                    <span class="view-btn">View Details</span>
+                </div>
+            </div>
+            <div class="gallery-item-info">
+                <h3>${artwork.title}</h3>
+                <span class="category-badge ${artwork.category}">${artwork.category === 'local' ? 'Local Museum' : 'National Museum'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Open artwork detail modal
+ * @param {string} artworkId - The artwork ID
+ */
+function openArtistArtworkModal(artworkId) {
+    const artwork = artistArtworks.find(a => a.id === artworkId);
+    
+    if (!artwork) {
+        showError('Artwork not found');
+        return;
+    }
+    
+    // Update modal content
+    document.getElementById('modalArtworkImage').src = artwork.imageUrl;
+    document.getElementById('modalArtworkTitle').textContent = artwork.title;
+    document.getElementById('modalArtworkCategory').textContent = artwork.category === 'local' ? 'Local Museum' : 'National Museum';
+    document.getElementById('modalArtworkDescription').textContent = artwork.description || 'No description available';
+    
+    if (artwork.createdAt) {
+        const createdDate = new Date(artwork.createdAt);
+        document.getElementById('modalArtworkDate').textContent = 'Created: ' + createdDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    } else {
+        document.getElementById('modalArtworkDate').textContent = 'Created: Unknown';
+    }
+    
+    // Show modal
+    document.getElementById('artistArtworkModal').style.display = 'flex';
+}
+
+/**
+ * Close artist artwork modal
+ */
+function closeArtistModal() {
+    document.getElementById('artistArtworkModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('artistArtworkModal');
+    if (e.target === modal) {
+        closeArtistModal();
+    }
+});
+
+// Make functions globally available
+window.switchArtistTab = switchArtistTab;
+window.filterGallery = filterGallery;
+window.loadArtistPage = loadArtistPage;
+window.openArtistArtworkModal = openArtistArtworkModal;
+window.closeArtistModal = closeArtistModal;
