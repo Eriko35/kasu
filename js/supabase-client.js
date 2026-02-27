@@ -20,7 +20,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 const ARTWORK_BUCKET = 'storage';
 
 // Allowed file types for image uploads
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml', 'image/avif'];
 
 // Maximum file size (10MB)
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -42,7 +42,7 @@ function validateImageFile(file) {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     return { 
       isValid: false, 
-      error: `Invalid file type. Allowed: JPEG, PNG, GIF, WebP` 
+      error: `Invalid file type. Allowed: JPEG, PNG, GIF, WebP, BMP, SVG, AVIF` 
     };
   }
   
