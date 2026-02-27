@@ -221,11 +221,14 @@
             background-repeat: repeat;
             background-size: 300px 300px;
             background-position: top left;
-            overflow: hidden;
+            overflow-y: auto;
         }
         .artDiv {
             width: 100%;
             max-width: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .artDesc {
             width: 60%;
@@ -238,11 +241,12 @@
             overflow-wrap: break-word;
         }
         .artDiv img {
-            min-width: 200px;
-            width: 100%;
+            width: auto;
+            max-width: 90%;
             max-height: 100%;
-            display: flex;
-            margin: 5%;
+            display: block;
+            object-fit: contain;
+            margin: 20px;
             box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
             cursor: pointer;
         }
@@ -258,24 +262,12 @@
         .fullArtTitle {
             text-transform: uppercase;
         }
-        #fullArtistProfile {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        #fullArtistProfile img {
-            width: 100%;
-            height: auto;
-        }
         .artDescBox {
             font-size: 18px;
             font-weight: normal;
         }
         .artMainDesc {
-            Height: 350px;
+            height: 350px;
             overflow-y: auto;
         }
         #backFullArt {
@@ -328,8 +320,6 @@
                                 <div class="artDescBox"><span id="fullArtArtist">Artist</span>, <span id="fullArtDate">Year</span> </div> 
                                 <div class="artDescBox"> <span id="fullArtMedium">Art Medium</span></div>
                                 <div class="artDescBox"> National Museum of Fine Arts, Manila</div>
-                            </div>
-                            <div id="fullArtistProfile"><img id="fullArtArtistImg" src="css/icons/icon-dark.webp" alt="Artist Profile">
                             </div>
                         </div>
                         <div class="artMainDesc">
@@ -416,6 +406,14 @@
                 <div>
                     <label for="artworkTitle">Title:</label>
                     <input type="text" id="artworkTitle" placeholder="Enter artwork title" required>
+                </div>
+                <div>
+                    <label for="artworkArtist">Artist Name:</label>
+                    <input type="text" id="artworkArtist" placeholder="Enter artist name" required>
+                </div>
+                <div>
+                    <label for="artworkYear">Year:</label>
+                    <input type="text" id="artworkYear" placeholder="Enter year (e.g. 1884)" required>
                 </div>
                 <div>
                     <label for="artworkDescription">Description:</label>
@@ -526,7 +524,7 @@
                     if (currentUserId && (currentUserRole === 'artist' || currentUserRole === 'admin') && artwork.artistId === currentUserId) {
                         buttonsHtml = `
                             <div class="art-buttons">
-                                <button class="art-btn art-btn-edit" onclick="editArtwork('${artwork.id}', '${artwork.title}', '${artwork.description || ''}', '${artwork.imageUrl}', '${artwork.imagePath || ''}')">Edit</button>
+                                <button class="art-btn art-btn-edit" onclick="editArtwork('${artwork.id}')">Edit</button>
                                 <button class="art-btn art-btn-delete" onclick="deleteArtworkById('${artwork.id}', '${artwork.imagePath || ''}')">Delete</button>
                             </div>
                         `;
@@ -560,32 +558,14 @@
             const modal = document.getElementById('fullArtModal');
             document.getElementById('fullArtImage').src = artwork.imageUrl;
             document.getElementById('fullArtTitle').textContent = artwork.title || 'Untitled';
-            document.getElementById('fullArtDate').textContent = new Date(artwork.createdAt).getFullYear();
+            document.getElementById('fullArtDate').textContent = artwork.year || new Date(artwork.createdAt).getFullYear();
             document.getElementById('fullArtDesc').textContent = artwork.description || 'No description available.';
             document.getElementById('fullArtMedium').textContent = artwork.medium || 'Art Piece'; // Assuming medium might be added later
             
-            // Reset artist info while loading
-            document.getElementById('fullArtArtist').textContent = 'Loading...';
-            document.getElementById('fullArtArtistImg').src = 'css/icons/icon-dark.webp';
+            // Use stored artist name or fallback
+            document.getElementById('fullArtArtist').textContent = artwork.artistName || 'Unknown Artist';
             
             modal.style.display = 'flex';
-            
-            // Fetch artist details
-            if (artwork.artistId) {
-                try {
-                    const profile = await getUserProfile(artwork.artistId);
-                    if (profile.success) {
-                        const p = profile.profile;
-                        document.getElementById('fullArtArtist').textContent = `${p.firstName} ${p.lastName}`;
-                        // If you have user profile images in DB, set it here
-                    } else {
-                        document.getElementById('fullArtArtist').textContent = 'Unknown Artist';
-                    }
-                } catch (e) {
-                    console.error(e);
-                    document.getElementById('fullArtArtist').textContent = 'Unknown Artist';
-                }
-            }
         }
         
         function closeFullArt() {
@@ -607,6 +587,8 @@
             document.getElementById('modalTitle').textContent = 'Add New Artwork';
             document.getElementById('artworkId').value = '';
             document.getElementById('artworkForm').reset();
+            document.getElementById('artworkArtist').value = '';
+            document.getElementById('artworkYear').value = '';
             document.getElementById('artworkModal').style.display = 'block';
             document.getElementById('modalSubmitBtn').textContent = 'Upload';
         }
@@ -615,12 +597,20 @@
             document.getElementById('artworkModal').style.display = 'none';
         }
         
-        function editArtwork(id, title, description, imageUrl, imagePath) {
+        function editArtwork(id) {
             event.stopPropagation();
+            const artwork = loadedArtworks.find(a => a.id === id);
+            if (!artwork) return;
+
             document.getElementById('modalTitle').textContent = 'Edit Artwork';
             document.getElementById('artworkId').value = id;
-            document.getElementById('artworkTitle').value = title;
-            document.getElementById('artworkDescription').value = description;
+            document.getElementById('artworkTitle').value = artwork.title || '';
+            document.getElementById('artworkDescription').value = artwork.description || '';
+            
+            // Populate new fields
+            document.getElementById('artworkArtist').value = artwork.artistName || '';
+            document.getElementById('artworkYear').value = artwork.year || '';
+
             document.getElementById('artworkModal').style.display = 'block';
             document.getElementById('modalSubmitBtn').textContent = 'Update';
             // Note: For editing, we keep the existing image - user can re-upload to change
@@ -669,6 +659,8 @@
             const artworkId = document.getElementById('artworkId').value;
             const title = document.getElementById('artworkTitle').value.trim();
             const description = document.getElementById('artworkDescription').value.trim();
+            const artistName = document.getElementById('artworkArtist').value.trim();
+            const year = document.getElementById('artworkYear').value.trim();
             const category = document.getElementById('artworkCategory').value;
             const fileInput = document.getElementById('artworkImage');
             const file = fileInput.files[0];
@@ -683,7 +675,9 @@
                     // Edit existing artwork
                     const result = await updateArtwork(artworkId, {
                         title: title,
-                        description: description
+                        description: description,
+                        artistName: artistName,
+                        year: year
                     }, userId);
                     
                     if (result.success) {
@@ -716,6 +710,8 @@
                         imageUrl: uploadResult.url,
                         imagePath: uploadResult.path,
                         category: category,
+                        artistName: artistName,
+                        year: year,
                         isPublic: true
                     });
                     

@@ -2,7 +2,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
   import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-  import {getFirestore, setDoc, doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, deleteDoc} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  import {getFirestore, setDoc, doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, deleteDoc, runTransaction, increment} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
   
   // Supabase Storage import
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -210,7 +210,9 @@
         category: artworkData.category || 'local',
         tags: artworkData.tags || [],
         createdAt: new Date().toISOString(),
-        isPublic: artworkData.isPublic !== false
+        isPublic: artworkData.isPublic !== false,
+        artistName: artworkData.artistName || null,
+        year: artworkData.year || null
       };
       
       const docRef = await addDoc(artworkRef, artworkRecord);
@@ -259,29 +261,16 @@
   
   /**
    * Get all public artworks (for guests)
-   * @param {string} category - Optional category filter ('local' or 'national')
    * @returns {Promise<Array>} - Array of public artwork documents
    */
-  async function getPublicArtworks(category = null) {
+  async function getPublicArtworks() {
     try {
       const artworksRef = collection(db, 'artworks');
-      let q;
-      
-      // If category is specified, filter by both isPublic and category
-      if (category) {
-        q = query(
-          artworksRef,
-          where('isPublic', '==', true),
-          where('category', '==', category),
-          orderBy('createdAt', 'desc')
-        );
-      } else {
-        q = query(
-          artworksRef,
-          where('isPublic', '==', true),
-          orderBy('createdAt', 'desc')
-        );
-      }
+      const q = query(
+        artworksRef,
+        where('isPublic', '==', true),
+        orderBy('createdAt', 'desc')
+      );
       
       const querySnapshot = await getDocs(q);
       const artworks = [];
@@ -320,12 +309,10 @@
       const artwork = artworkDoc.data();
       
       // Check if user is the owner or an admin
-      // Handle case where artistId might be missing or undefined
-      const isOwner = artwork.artistId && artwork.artistId === userId;
+      const isOwner = artwork.artistId === userId;
       const isAdmin = await checkIsAdmin(userId);
       
-      // Allow update if: user is owner, user is admin, or artistId is missing (legacy artwork)
-      if (!isOwner && !isAdmin && artwork.artistId) {
+      if (!isOwner && !isAdmin) {
         return { success: false, error: 'You do not have permission to update this artwork' };
       }
       
@@ -335,7 +322,9 @@
         description: artworkData.description !== undefined ? artworkData.description : artwork.description,
         tags: artworkData.tags || artwork.tags || [],
         isPublic: artworkData.isPublic !== undefined ? artworkData.isPublic : artwork.isPublic,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        artistName: artworkData.artistName !== undefined ? artworkData.artistName : (artwork.artistName || null),
+        year: artworkData.year !== undefined ? artworkData.year : (artwork.year || null)
       };
       
       await setDoc(artworkDocRef, updateData, { merge: true });
@@ -370,12 +359,10 @@
       const artwork = artworkDoc.data();
       
       // Check if user is the owner or an admin
-      // Handle case where artistId might be missing or undefined
-      const isOwner = artwork.artistId && artwork.artistId === userId;
+      const isOwner = artwork.artistId === userId;
       const isAdmin = await checkIsAdmin(userId);
       
-      // Allow deletion if: user is owner, user is admin, or artistId is missing (legacy artwork)
-      if (!isOwner && !isAdmin && artwork.artistId) {
+      if (!isOwner && !isAdmin) {
         return { success: false, error: 'You do not have permission to delete this artwork' };
       }
       
@@ -517,6 +504,82 @@
       return false;
     }
   }
+
+  /**
+   * Toggle vote for an artwork (Local Museum only)
+   * @param {string} userId - The user's ID
+   * @param {string} artworkId - The artwork ID
+   * @returns {Promise<Object>} - Result with new vote count and status
+   */
+  async function toggleArtworkVote(userId, artworkId) {
+    try {
+      return await runTransaction(db, async (transaction) => {
+        const artworkRef = doc(db, 'artworks', artworkId);
+        const userVoteRef = doc(db, 'users', userId, 'votes', artworkId);
+        const userRef = doc(db, 'users', userId);
+        
+        const artworkDoc = await transaction.get(artworkRef);
+        if (!artworkDoc.exists()) {
+          throw "Artwork not found";
+        }
+        
+        const artworkData = artworkDoc.data();
+        if (artworkData.category !== 'local') {
+          throw "Voting is only allowed for Local Museum artworks";
+        }
+        
+        const userVoteDoc = await transaction.get(userVoteRef);
+        const userDoc = await transaction.get(userRef);
+        
+        let newCount = artworkData.voteCount || 0;
+        let voted = false;
+        
+        if (userVoteDoc.exists()) {
+          // Remove vote
+          transaction.delete(userVoteRef);
+          transaction.update(artworkRef, { voteCount: increment(-1) });
+          // Decrement user vote count if user doc exists
+          if (userDoc.exists()) {
+            transaction.update(userRef, { voteCount: increment(-1) });
+          }
+          newCount = Math.max(0, newCount - 1);
+          voted = false;
+        } else {
+          // Add vote - Check limit
+          let userVoteCount = 0;
+          if (userDoc.exists()) {
+            userVoteCount = userDoc.data().voteCount || 0;
+          }
+          
+          if (userVoteCount >= 3) {
+            throw "You have reached the limit of 3 votes.";
+          }
+          
+          transaction.set(userVoteRef, { timestamp: new Date().toISOString() });
+          transaction.update(artworkRef, { voteCount: increment(1) });
+          transaction.set(userRef, { voteCount: increment(1) }, { merge: true });
+          
+          newCount++;
+          voted = true;
+        }
+        
+        return { success: true, voted, newCount };
+      });
+    } catch (error) {
+      console.error('Vote error:', error);
+      return { success: false, error: typeof error === 'string' ? error : error.message };
+    }
+  }
+
+  async function getUserVotes(userId) {
+    try {
+        const votesRef = collection(db, 'users', userId, 'votes');
+        const snapshot = await getDocs(votesRef);
+        return { success: true, votes: snapshot.docs.map(doc => doc.id) };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+  }
   
   // Export functions globally for use in other files
   
@@ -630,6 +693,8 @@
   window.deleteArtworkImage = deleteArtworkImage;
   window.validateImageFile = validateImageFile;
   window.generateArtworkPath = generateArtworkPath;
+  window.toggleArtworkVote = toggleArtworkVote;
+  window.getUserVotes = getUserVotes;
   
   /**
    * Complete artwork upload flow (upload + save to database)
