@@ -687,6 +687,391 @@
     },5000)
 
   }
+
+  // ============================================
+  // MUSEUM CRUD OPERATIONS
+  // ============================================
+
+  /**
+   * Validate museum data
+   * @param {Object} museumData - Museum data to validate
+   * @returns {Object} - Validation result with isValid and error message
+   */
+  function validateMuseumData(museumData) {
+    if (!museumData) {
+      return { isValid: false, error: 'No museum data provided' };
+    }
+    
+    if (!museumData.name || museumData.name.trim() === '') {
+      return { isValid: false, error: 'Museum name is required' };
+    }
+    
+    if (museumData.name.length > 200) {
+      return { isValid: false, error: 'Museum name must be less than 200 characters' };
+    }
+    
+    if (museumData.type && !['local', 'national'].includes(museumData.type)) {
+      return { isValid: false, error: 'Museum type must be either "local" or "national"' };
+    }
+    
+    if (museumData.contactInfo) {
+      if (museumData.contactInfo.email && !isValidEmail(museumData.contactInfo.email)) {
+        return { isValid: false, error: 'Invalid email format' };
+      }
+      
+      if (museumData.contactInfo.website && !isValidUrl(museumData.contactInfo.website)) {
+        return { isValid: false, error: 'Invalid website URL format' };
+      }
+    }
+    
+    return { isValid: true, error: null };
+  }
+
+  /**
+   * Validate email format
+   * @param {string} email - Email to validate
+   * @returns {boolean} - True if valid
+   */
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  /**
+   * Validate URL format
+   * @param {string} url - URL to validate
+   * @returns {boolean} - True if valid
+   */
+  function isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Create a new museum record
+   * @param {string} artistId - The artist's user ID
+   * @param {Object} museumData - Museum data including name, location, type, exhibition history, contact info
+   * @returns {Promise<Object>} - Result with saved museum or error
+   */
+  async function createMuseum(artistId, museumData) {
+    try {
+      // Validate required fields
+      const validation = validateMuseumData(museumData);
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+      
+      // Check if user is an artist
+      const isArtist = await checkIsArtist(artistId);
+      const isAdmin = await checkIsAdmin(artistId);
+      
+      if (!isArtist && !isAdmin) {
+        return { success: false, error: 'Only verified artist accounts can create museum records' };
+      }
+      
+      const museumRef = collection(db, 'museums');
+      const museumRecord = {
+        name: museumData.name,
+        location: museumData.location || '',
+        type: museumData.type || 'local', // 'local' or 'national'
+        exhibitionHistory: museumData.exhibitionHistory || [],
+        contactInfo: {
+          email: museumData.contactInfo?.email || '',
+          phone: museumData.contactInfo?.phone || '',
+          website: museumData.contactInfo?.website || '',
+          address: museumData.contactInfo?.address || ''
+        },
+        description: museumData.description || '',
+        artistId: artistId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const docRef = await addDoc(museumRef, museumRecord);
+      
+      return {
+        success: true,
+        id: docRef.id,
+        data: museumRecord
+      };
+    } catch (error) {
+      console.error('Create museum error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get all museums created by an artist
+   * @param {string} artistId - The artist's user ID
+   * @returns {Promise<Array>} - Array of museum documents
+   */
+  async function getMuseumsByArtist(artistId) {
+    try {
+      const museumsRef = collection(db, 'museums');
+      const q = query(
+        museumsRef,
+        where('artistId', '==', artistId),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const museums = [];
+      
+      querySnapshot.forEach((doc) => {
+        museums.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return { success: true, museums };
+    } catch (error) {
+      console.error('Get museums error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get all museums (for viewing)
+   * @param {string} type - Optional type filter ('local' or 'national')
+   * @returns {Promise<Array>} - Array of museum documents
+   */
+  async function getAllMuseums(type = null) {
+    try {
+      const museumsRef = collection(db, 'museums');
+      let q;
+      
+      if (type) {
+        q = query(
+          museumsRef,
+          where('type', '==', type),
+          orderBy('createdAt', 'desc')
+        );
+      } else {
+        q = query(
+          museumsRef,
+          orderBy('createdAt', 'desc')
+        );
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const museums = [];
+      
+      querySnapshot.forEach((doc) => {
+        museums.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return { success: true, museums };
+    } catch (error) {
+      console.error('Get all museums error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get a single museum by ID
+   * @param {string} museumId - The museum document ID
+   * @returns {Promise<Object>} - Museum document
+   */
+  async function getMuseumById(museumId) {
+    try {
+      const museumDocRef = doc(db, 'museums', museumId);
+      const museumDoc = await getDoc(museumDocRef);
+      
+      if (museumDoc.exists()) {
+        return { success: true, museum: { id: museumDoc.id, ...museumDoc.data() } };
+      }
+      return { success: false, error: 'Museum not found' };
+    } catch (error) {
+      console.error('Get museum error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Update a museum record
+   * @param {string} museumId - The museum document ID
+   * @param {Object} museumData - Updated museum data
+   * @param {string} userId - The current user's ID (for permission check)
+   * @returns {Promise<Object>} - Result with updated museum or error
+   */
+  async function updateMuseum(museumId, museumData, userId) {
+    try {
+      // First check if museum exists
+      const museumDocRef = doc(db, 'museums', museumId);
+      const museumDoc = await getDoc(museumDocRef);
+      
+      if (!museumDoc.exists()) {
+        return { success: false, error: 'Museum not found' };
+      }
+      
+      const museum = museumDoc.data();
+      
+      // Check if user is the owner or an admin
+      const isOwner = museum.artistId === userId;
+      const isAdmin = await checkIsAdmin(userId);
+      
+      if (!isOwner && !isAdmin) {
+        return { success: false, error: 'You do not have permission to update this museum' };
+      }
+      
+      // Build update data
+      const updateData = {
+        name: museumData.name !== undefined ? museumData.name : museum.name,
+        location: museumData.location !== undefined ? museumData.location : museum.location,
+        type: museumData.type !== undefined ? museumData.type : museum.type,
+        description: museumData.description !== undefined ? museumData.description : museum.description,
+        exhibitionHistory: museumData.exhibitionHistory !== undefined ? museumData.exhibitionHistory : museum.exhibitionHistory,
+        contactInfo: {
+          email: museumData.contactInfo?.email !== undefined ? museumData.contactInfo.email : (museum.contactInfo?.email || ''),
+          phone: museumData.contactInfo?.phone !== undefined ? museumData.contactInfo.phone : (museum.contactInfo?.phone || ''),
+          website: museumData.contactInfo?.website !== undefined ? museumData.contactInfo.website : (museum.contactInfo?.website || ''),
+          address: museumData.contactInfo?.address !== undefined ? museumData.contactInfo.address : (museum.contactInfo?.address || '')
+        },
+        updatedAt: new Date().toISOString()
+      };
+      
+      await setDoc(museumDocRef, updateData, { merge: true });
+      
+      return {
+        success: true,
+        id: museumId,
+        data: updateData
+      };
+    } catch (error) {
+      console.error('Update museum error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Delete a museum record
+   * @param {string} museumId - The museum document ID
+   * @param {string} userId - The current user's ID (for permission check)
+   * @returns {Promise<Object>} - Result with success or error
+   */
+  async function deleteMuseum(museumId, userId) {
+    try {
+      // First check if museum exists
+      const museumDocRef = doc(db, 'museums', museumId);
+      const museumDoc = await getDoc(museumDocRef);
+      
+      if (!museumDoc.exists()) {
+        return { success: false, error: 'Museum not found' };
+      }
+      
+      const museum = museumDoc.data();
+      
+      // Check if user is the owner or an admin
+      const isOwner = museum.artistId === userId;
+      const isAdmin = await checkIsAdmin(userId);
+      
+      if (!isOwner && !isAdmin) {
+        return { success: false, error: 'You do not have permission to delete this museum' };
+      }
+      
+      // Delete the museum record
+      await deleteDoc(museumDocRef);
+      
+      return { success: true, message: 'Museum deleted successfully' };
+    } catch (error) {
+      console.error('Delete museum error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Add exhibition to museum's history
+   * @param {string} museumId - The museum document ID
+   * @param {Object} exhibitionData - Exhibition data (title, date, description)
+   * @param {string} userId - The current user's ID (for permission check)
+   * @returns {Promise<Object>} - Result with updated museum or error
+   */
+  async function addExhibitionToMuseum(museumId, exhibitionData, userId) {
+    try {
+      // First get the museum
+      const museumResult = await getMuseumById(museumId);
+      
+      if (!museumResult.success) {
+        return museumResult;
+      }
+      
+      const museum = museumResult.museum;
+      
+      // Check permission
+      const isOwner = museum.artistId === userId;
+      const isAdmin = await checkIsAdmin(userId);
+      
+      if (!isOwner && !isAdmin) {
+        return { success: false, error: 'You do not have permission to update this museum' };
+      }
+      
+      // Create exhibition entry
+      const exhibition = {
+        id: Date.now().toString(),
+        title: exhibitionData.title,
+        date: exhibitionData.date || new Date().toISOString(),
+        description: exhibitionData.description || '',
+        addedAt: new Date().toISOString()
+      };
+      
+      // Add to exhibition history
+      const exhibitionHistory = museum.exhibitionHistory || [];
+      exhibitionHistory.push(exhibition);
+      
+      // Update museum
+      return await updateMuseum(museumId, { exhibitionHistory }, userId);
+    } catch (error) {
+      console.error('Add exhibition error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Remove exhibition from museum's history
+   * @param {string} museumId - The museum document ID
+   * @param {string} exhibitionId - The exhibition ID to remove
+   * @param {string} userId - The current user's ID (for permission check)
+   * @returns {Promise<Object>} - Result with updated museum or error
+   */
+  async function removeExhibitionFromMuseum(museumId, exhibitionId, userId) {
+    try {
+      // First get the museum
+      const museumResult = await getMuseumById(museumId);
+      
+      if (!museumResult.success) {
+        return museumResult;
+      }
+      
+      const museum = museumResult.museum;
+      
+      // Check permission
+      const isOwner = museum.artistId === userId;
+      const isAdmin = await checkIsAdmin(userId);
+      
+      if (!isOwner && !isAdmin) {
+        return { success: false, error: 'You do not have permission to update this museum' };
+      }
+      
+      // Remove exhibition from history
+      const exhibitionHistory = (museum.exhibitionHistory || []).filter(
+        ex => ex.id !== exhibitionId
+      );
+      
+      // Update museum
+      return await updateMuseum(museumId, { exhibitionHistory }, userId);
+    } catch (error) {
+      console.error('Remove exhibition error:', error);
+      return { success: false, error: error.message };
+    }
+  }
   
   // Export functions for global access
   window.uploadArtworkImage = uploadArtworkImage;
@@ -702,3 +1087,12 @@
   window.getUserProfile = getUserProfile;
   window.updateUserProfile = updateUserProfile;
   window.checkUserPermission = checkUserPermission;
+  window.validateMuseumData = validateMuseumData;
+  window.createMuseum = createMuseum;
+  window.getMuseumsByArtist = getMuseumsByArtist;
+  window.getAllMuseums = getAllMuseums;
+  window.getMuseumById = getMuseumById;
+  window.updateMuseum = updateMuseum;
+  window.deleteMuseum = deleteMuseum;
+  window.addExhibitionToMuseum = addExhibitionToMuseum;
+  window.removeExhibitionFromMuseum = removeExhibitionFromMuseum;
