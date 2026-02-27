@@ -73,8 +73,8 @@ service cloud.firestore {
     // ============================================
     match /artworks/{artworkId} {
       // Anyone can read public artworks
-      allow read: if request.resource.data.isPublic == true 
-                   || (isAuthenticated() && (isOwner(request.resource.data.artistId) || isAdmin()));
+      allow read: if resource.data.isPublic == true 
+                   || (isAuthenticated() && (isOwner(resource.data.artistId) || isAdmin()));
       
       // Artists and Admins can create artworks
       allow create: if isAuthenticated() && isArtistOrAdmin();
