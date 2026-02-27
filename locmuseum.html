@@ -36,7 +36,7 @@
             width: 120vw;
             height: 20vh;
 
-            background-image: url('assets/image/floor.webp');
+            background-image: url('css/image/floor.webp');
             background-repeat: repeat;
             background-size: 300px 300px;
 
@@ -48,7 +48,7 @@
             display: grid;
             align-items: center;
             grid-auto-flow: column;
-            background-image: url('assets/image/wall.webp');
+            background-image: url('css/image/wall.webp');
             background-repeat: repeat;
             background-size: 300px 300px;
             background-position: top left;
@@ -65,57 +65,78 @@
 </head>
 <body>
     <div class="horizontal-scroll">
-        <div class="wall">
+        <div class="wall" id="artGallery">
+            <!-- Artworks will be loaded dynamically here -->
             <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
+                <p>Loading artworks...</p>
             </div>
         </div>
         <div class="floor">
                         floor test
         </div>
     </div>
+        <script src="js/firebase.js" type="module"></script>
+        <script>
+            // ============================================
+            // DYNAMIC ARTWORK LOADER FOR LOCAL MUSEUM
+            // ============================================
+            
+            document.addEventListener('DOMContentLoaded', async function() {
+                // Wait for Firebase to initialize
+                setTimeout(async function() {
+                    await loadLocalMuseumArtworks();
+                }, 1500);
+            });
+            
+            async function loadLocalMuseumArtworks() {
+                console.log('Loading Local Museum artworks...');
+                const wall = document.getElementById('artGallery');
+                if (!wall) {
+                    console.error('ArtGallery container not found');
+                    return;
+                }
+                
+                try {
+                    // Get all public artworks filtered by 'local' category
+                    const result = await getPublicArtworks();
+                    
+                    if (!result.success) {
+                        console.error('Error loading artworks:', result.error);
+                        return;
+                    }
+                    
+                    // Filter for local museum artworks only
+                    const localArtworks = result.artworks.filter(art => art.category === 'local');
+                    
+                    console.log('Local artworks found:', localArtworks.length);
+                    
+                    if (localArtworks.length === 0) {
+                        wall.innerHTML = '<div class="art"><p>No artworks uploaded yet</p></div>';
+                        return;
+                    }
+                    
+                    // Clear loading message
+                    wall.innerHTML = '';
+                    
+                    // Create artwork elements for each local artwork
+                    localArtworks.forEach(function(artwork) {
+                        const artDiv = document.createElement('div');
+                        artDiv.className = 'art';
+                        artDiv.innerHTML = `
+                            <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
+                            <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
+                            <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description || ''}</p>
+                        `;
+                        wall.appendChild(artDiv);
+                    });
+                    
+                    console.log('Artworks loaded successfully!');
+                    
+                } catch (error) {
+                    console.error('Error loading artworks:', error);
+                }
+            }
+        </script>
         <script>
             const scroller = document.querySelector('.horizontal-scroll');
             const floor = document.querySelector('.floor');
