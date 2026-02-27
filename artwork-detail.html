@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artwork Details - Kamuseo</title>
+    <link rel="stylesheet" href="css/stylesheet.css">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #e94560;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --text-light: #f8f9fa;
+            --text-muted: #adb5bd;
+            --card-bg: #1f1f3a;
+            --border-color: #2d2d4a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .detail-nav {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .nav-brand img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-brand h1 {
+            font-size: 24px;
+            color: var(--accent-color);
+        }
+
+        /* Main Content */
+        .detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .artwork-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+
+        /* Image Section */
+        .artwork-image-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .artwork-main-image {
+            width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        /* Info Section */
+        .artwork-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .artwork-title {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .artist-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .artist-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .artist-name {
+            font-size: 18px;
+        }
+
+        .artist-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Bidding Card */
+        .bidding-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid var(--accent-color);
+        }
+
+        .bid-section {
+            margin-bottom: 25px;
+        }
+
+        .current-bid-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .current-bid-amount {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .bid-count {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .time-remaining {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: var(--secondary-color);
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .time-icon {
+            font-size: 24px;
+        }
+
+        .time-text {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .time-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--warning-color);
+        }
+
+        .bid-input-group {
+            margin-bottom: 20px;
+        }
+
+        .bid-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .bid-input-wrapper {
+            position: relative;
+        }
+
+        .bid-input-wrapper span {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+
+        .bid-input {
+            width: 100%;
+            padding: 16px 20px 16px 45px;
+            font-size: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--secondary-color);
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .bid-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .min-bid-note {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .btn-place-bid {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--accent-color), #d63d56);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-place-bid:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-place-bid:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* Artwork Details */
+        .details-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .details-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* Description */
+        .description-section {
+            margin-top: 30px;
+        }
+
+        .description-section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .description-text {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        /* Museum References */
+        .museum-refs-section {
+            margin-top: 30px;
+        }
+
+        .museum-refs-section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .museum-ref-card {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: var(--secondary-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .museum-ref-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .museum-ref-info h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .museum-ref-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Bid History */
+        .bid-history-section {
+            margin-top: 30px;
+        }
+
+        .bid-history-section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .bid-history-list {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .bid-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .bid-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .bid-history-bidder {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bid-history-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .bid-history-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .bid-history-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Loading */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px 25px;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: #dc3545; }
+
+        @media (max-width: 1024px) {
+            .artwork-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .detail-container {
+                padding: 20px;
+            }
+
+            .artwork-title {
+                font-size: 28px;
+            }
+
+            .current-bid-amount {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="detail-nav">
+        <a href="auction.html" class="nav-brand">
+            <img src="css/icons/logo.webp" alt="Kamuseo">
+            <h1>KAMUSEO</h1>
+        </a>
+        <a href="auction.html" style="color: var(--text-light); text-decoration: none;">← Back to Auctions</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="detail-container" id="mainContent">
+        <div class="loading-container">
+            <div class="spinner"></div>
+        </div>
+    </main>
+
+    <script type="module">
+        // Import auction system
+        import { 
+            getArtwork, 
+            placeBid, 
+            subscribeToBids,
+            getArtworkBids,
+            auth,
+            db
+        } from './js/auction-system.js';
+
+        import { 
+            getAuth, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+        // Get artwork ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const artworkId = urlParams.get('id');
+
+        // State
+        let artwork = null;
+        let bids = [];
+        let unsubscribeBids = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!artworkId) {
+                window.location.href = 'auction.html';
+                return;
+            }
+
+            await loadArtwork();
+        });
+
+        // Load artwork
+        async function loadArtwork() {
+            try {
+                artwork = await getArtwork(artworkId);
+                
+                if (!artwork) {
+                    document.getElementById('mainContent').innerHTML = `
+                        <div style="text-align: center; padding: 60px;">
+                            <h2>Artwork Not Found</h2>
+                            <p style="color: var(--text-muted); margin-top: 10px;">This artwork may have been removed.</p>
+                            <a href="auction.html" style="color: var(--accent-color); margin-top: 20px; display: inline-block;">← Back to Auctions</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Load bids
+                bids = await getArtworkBids(artworkId);
+                
+                // Subscribe to real-time bid updates
+                unsubscribeBids = subscribeToBids(artworkId, (newBids) => {
+                    bids = newBids;
+                    renderBidHistory();
+                    updateCurrentBid();
+                });
+
+                renderArtwork();
+            } catch (error) {
+                console.error('Error loading artwork:', error);
+                showToast('Error loading artwork', 'error');
+            }
+        }
+
+        // Render artwork
+        function renderArtwork() {
+            const main = document.getElementById('mainContent');
+            const currentBid = artwork.currentBid || artwork.startingBid || 0;
+            const minBid = currentBid + (artwork.bidIncrement || 1);
+            const timeRemaining = getTimeRemaining(artwork.auctionEndDate);
+            const initials = artwork.artistName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A';
+            const isOwner = artwork.artistId === auth.currentUser?.uid;
+            const isActive = artwork.auctionStatus === 'active';
+
+            // Render museum references
+            let museumRefsHtml = '';
+            if (artwork.museumReferences && artwork.museumReferences.length > 0) {
+                museumRefsHtml = `
+                    <div class="museum-refs-section">
+                        <h3>Museum References</h3>
+                        ${artwork.museumReferences.map(ref => `
+                            <div class="museum-ref-card">
+                                <img src="${ref.artworkImage}" alt="${ref.artworkTitle}" class="museum-ref-image">
+                                <div class="museum-ref-info">
+                                    <h4>${ref.artworkTitle}</h4>
+                                    <p>${ref.museumName}</p>
+                                    ${ref.inspiration ? `<p style="font-style: italic; margin-top: 5px;">"${ref.inspiration}"</p>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Render bid history
+            const bidHistoryHtml = bids.length > 0 ? `
+                <div class="bid-history-section">
+                    <h3>Bid History (${bids.length} bids)</h3>
+                    <div class="bid-history-list">
+                        ${bids.slice(0, 5).map(bid => `
+                            <div class="bid-history-item">
+                                <div class="bid-history-bidder">
+                                    <div class="bid-history-avatar">${bid.bidderName?.charAt(0) || '?'}</div>
+                                    <div>
+                                        <div style="font-weight: 600;">${bid.bidderName}</div>
+                                        <div class="bid-history-time">${formatTime(bid.timestamp)}</div>
+                                    </div>
+                                </div>
+                                <div class="bid-history-amount">$${bid.amount.toFixed(2)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '<p style="color: var(--text-muted);">No bids yet. Be the first to bid!</p>';
+
+            main.innerHTML = `
+                <div class="artwork-layout">
+                    <!-- Image Section -->
+                    <div class="artwork-image-section">
+                        <img src="${artwork.imageUrl}" alt="${artwork.title}" class="artwork-main-image">
+                        
+                        <div class="description-section">
+                            <h3>Description</h3>
+                            <p class="description-text">${artwork.description || 'No description provided.'}</p>
+                        </div>
+
+                        ${museumRefsHtml}
+                    </div>
+
+                    <!-- Info Section -->
+                    <div class="artwork-info-section">
+                        <div>
+                            <h1 class="artwork-title">${artwork.title}</h1>
+                            <a href="profile.html?id=${artwork.artistId}" class="artist-link">
+                                <div class="artist-avatar">${initials}</div>
+                                <div>
+                                    <div class="artist-label">Artist</div>
+                                    <div class="artist-name">${artwork.artistName}</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Bidding Card -->
+                        <div class="bidding-card">
+                            <div class="bid-section">
+                                <div class="current-bid-label">Current Bid</div>
+                                <div class="current-bid-amount" id="currentBidDisplay">$${currentBid.toFixed(2)}</div>
+                                <div class="bid-count">${bids.length} bids</div>
+                            </div>
+
+                            <div class="time-remaining">
+                                <span class="time-icon">⏱️</span>
+                                <div>
+                                    <div class="time-text">Time Remaining</div>
+                                    <div class="time-value">${timeRemaining}</div>
+                                </div>
+                            </div>
+
+                            ${isActive && !isOwner ? `
+                                <div class="bid-input-group">
+                                    <label>Your Bid</label>
+                                    <div class="bid-input-wrapper">
+                                        <span>$</span>
+                                        <input type="number" class="bid-input" id="bidAmount" value="${minBid.toFixed(2)}" step="0.01">
+                                    </div>
+                                    <p class="min-bid-note">Minimum bid: $${minBid.toFixed(2)}</p>
+                                </div>
+
+                                <button class="btn-place-bid" onclick="submitBid()" id="bidButton">
+                                    Place Bid
+                                </button>
+                            ` : isOwner ? `
+                                <button class="btn-place-bid" disabled>
+                                    This is your artwork
+                                </button>
+                            ` : artwork.auctionStatus === 'ended' || artwork.auctionStatus === 'sold' ? `
+                                <button class="btn-place-bid" disabled>
+                                    Auction Ended
+                                </button>
+                            ` : `
+                                <button class="btn-place-bid" disabled>
+                                    Sign in to Bid
+                                </button>
+                            `}
+                        </div>
+
+                        <!-- Details Card -->
+                        <div class="details-card">
+                            <h3>Artwork Details</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Medium</span>
+                                <span class="detail-value">${artwork.medium || 'Not specified'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Year Created</span>
+                                <span class="detail-value">${artwork.yearCreated || 'Not specified'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Dimensions</span>
+                                <span class="detail-value">${artwork.dimensions || 'Not specified'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Starting Bid</span>
+                                <span class="detail-value">$${(artwork.startingBid || 0).toFixed(2)}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Status</span>
+                                <span class="detail-value" style="color: var(--accent-color);">${artwork.auctionStatus.toUpperCase()}</span>
+                            </div>
+                        </div>
+
+                        ${bidHistoryHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update current bid display
+        function updateCurrentBid() {
+            if (bids.length > 0) {
+                const currentBid = bids[0].amount;
+                document.getElementById('currentBidDisplay').textContent = `$${currentBid.toFixed(2)}`;
+                
+                const minBid = currentBid + (artwork.bidIncrement || 1);
+                document.getElementById('bidAmount').value = minBid.toFixed(2);
+                document.querySelector('.min-bid-note').textContent = `Minimum bid: $${minBid.toFixed(2)}`;
+            }
+        }
+
+        // Render bid history
+        function renderBidHistory() {
+            // Re-render the bid history section if it exists
+            const historySection = document.querySelector('.bid-history-section');
+            if (historySection && bids.length > 0) {
+                historySection.innerHTML = `
+                    <h3>Bid History (${bids.length} bids)</h3>
+                    <div class="bid-history-list">
+                        ${bids.slice(0, 5).map(bid => `
+                            <div class="bid-history-item">
+                                <div class="bid-history-bidder">
+                                    <div class="bid-history-avatar">${bid.bidderName?.charAt(0) || '?'}</div>
+                                    <div>
+                                        <div style="font-weight: 600;">${bid.bidderName}</div>
+                                        <div class="bid-history-time">${formatTime(bid.timestamp)}</div>
+                                    </div>
+                                </div>
+                                <div class="bid-history-amount">$${bid.amount.toFixed(2)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Submit bid
+        window.submitBid = async function() {
+            if (!auth.currentUser) {
+                showToast('Please sign in to place bids', 'error');
+                return;
+            }
+
+            const bidAmount = parseFloat(document.getElementById('bidAmount').value);
+            const currentBid = artwork.currentBid || artwork.startingBid || 0;
+            const minBid = currentBid + (artwork.bidIncrement || 1);
+
+            if (bidAmount < minBid) {
+                showToast(`Minimum bid is $${minBid.toFixed(2)}`, 'error');
+                return;
+            }
+
+            const button = document.getElementById('bidButton');
+            button.disabled = true;
+            button.textContent = 'Placing Bid...';
+
+            try {
+                const result = await placeBid(artworkId, bidAmount);
+                
+                if (result.success) {
+                    showToast('Bid placed successfully!', 'success');
+                } else {
+                    showToast(result.error, 'error');
+                    button.disabled = false;
+                    button.textContent = 'Place Bid';
+                }
+            } catch (error) {
+                showToast('Error placing bid', 'error');
+                button.disabled = false;
+                button.textContent = 'Place Bid';
+            }
+        }
+
+        // Get time remaining
+        function getTimeRemaining(endDate) {
+            if (!endDate) return 'No end date';
+            
+            const end = endDate.toDate ? endDate.toDate() : new Date(endDate);
+            const now = new Date();
+            const diff = end - now;
+
+            if (diff <= 0) return 'Ended';
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (days > 0) return `${days} days ${hours}h`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes} minutes`;
+        }
+
+        // Format time
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Auto-refresh time
+        setInterval(() => {
+            if (artwork) {
+                const timeElement = document.querySelector('.time-value');
+                if (timeElement) {
+                    timeElement.textContent = getTimeRemaining(artwork.auctionEndDate);
+                }
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
