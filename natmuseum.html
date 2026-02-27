@@ -272,7 +272,82 @@
             floor test
         </div>
     </div>
+    <script src="js/firebase.js" type="module"></script>
     <script src="js/script.js"></script>
+    <script>
+        // ============================================
+        // DYNAMIC ARTWORK LOADER FOR NATIONAL MUSEUM
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for Firebase to initialize
+            setTimeout(async function() {
+                await loadNationalMuseumArtworks();
+            }, 1500);
+        });
+        
+        async function loadNationalMuseumArtworks() {
+            console.log('Loading National Museum artworks...');
+            const wall = document.querySelector('.wall');
+            if (!wall) {
+                console.error('Wall container not found');
+                return;
+            }
+            
+            try {
+                // Get all public artworks filtered by 'national' category
+                const result = await getPublicArtworks();
+                
+                if (!result.success) {
+                    console.error('Error loading artworks:', result.error);
+                    return;
+                }
+                
+                // Filter for national museum artworks only
+                const nationalArtworks = result.artworks.filter(art => art.category === 'national');
+                
+                console.log('National artworks found:', nationalArtworks.length);
+                
+                if (nationalArtworks.length === 0) {
+                    console.log('No national artworks uploaded yet');
+                    return;
+                }
+                
+                // Find where the placeholder <p>1</p> elements start and remove them
+                const placeholderArts = wall.querySelectorAll('.art > p');
+                placeholderArts.forEach(function(p) {
+                    if (p.textContent === '1') {
+                        p.parentElement.remove();
+                    }
+                });
+                
+                // Also remove any empty art divs
+                wall.querySelectorAll('.art').forEach(function(artDiv) {
+                    if (artDiv.children.length === 0 || (artDiv.children.length === 1 && artDiv.querySelector('p') && artDiv.querySelector('p').textContent === '1')) {
+                        artDiv.remove();
+                    }
+                });
+                
+                // Create artwork elements for each national artwork
+                nationalArtworks.forEach(function(artwork) {
+                    const artDiv = document.createElement('div');
+                    artDiv.className = 'art';
+                    artDiv.innerHTML = `
+                        <div>
+                            <img class="artimg" src="${artwork.imageUrl}" alt="${artwork.title}">
+                        </div>
+                        <p>${artwork.title || 'Untitled'}</p>
+                    `;
+                    wall.appendChild(artDiv);
+                });
+                
+                console.log('National artworks loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error loading artworks:', error);
+            }
+        }
+    </script>
 
 
 </body>
