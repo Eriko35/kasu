@@ -9,7 +9,8 @@
         }
         body {
             margin: 0;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: auto;
         }
         .scene {
             display: flex;
@@ -30,13 +31,11 @@
         }
         .floor {
             will-change: transform, background-position;
-            /* Removed position: fixed to allow horizontal scrolling */
+            position: fixed;
             bottom: -75px;
             left: -150px;
-            width: 120vw;
+            width: 150%;
             height: 20vh;
-            overflow-x: auto;
-            white-space: nowrap;
 
             background-image: url('css/image/floor.webp');
             background-repeat: repeat;
@@ -58,6 +57,7 @@
         
         .horizontal-scroll {
             width: 100vw;
+            height: 100vh;
             overflow-x: scroll;
             overflow-y: hidden;
             scroll-behavior: smooth;
@@ -76,7 +76,7 @@
     </style>
 </head>
 <body>
-    <div class="horizontal-scroll">
+    <div class="horizontal-scroll" id="scroller">
         <div class="wall" id="artGallery">
             <a class="bckbtn" href="home2.html">BACK</a>
             <!-- Artworks will be loaded dynamically here -->
@@ -84,92 +84,142 @@
                 <p>Loading artworks...</p>
             </div>
         </div>
-        <div class="floor" style="background-position-x: -461px;">
-                        floor test
+        <div class="floor" id="floor" style="background-position-x: -461px;">
+            floor test
         </div>
     </div>
-        <script src="js/firebase.js" type="module"></script>
-        <script>
-            // ============================================
-            // DYNAMIC ARTWORK LOADER FOR LOCAL MUSEUM
-            // ============================================
+    <script src="js/firebase.js" type="module"></script>
+    <script>
+        // ============================================
+        // HORIZONTAL SCROLL WITH FLOOR SYNC
+        // ============================================
+        
+        const scroller = document.getElementById('scroller');
+        const floor = document.getElementById('floor');
+        
+        // Handle mouse wheel → horizontal scroll conversion
+        scroller.addEventListener('wheel', function(e) {
+            // Only prevent default if we can scroll horizontally
+            if (scroller.scrollWidth > scroller.clientWidth) {
+                e.preventDefault();
+                // Convert vertical scroll to horizontal scroll
+                scroller.scrollLeft += e.deltaY;
+                // Sync floor background position
+                updateFloorPosition();
+            }
+        }, { passive: false });
+        
+        // Sync floor on scroll
+        scroller.addEventListener('scroll', function() {
+            updateFloorPosition();
+        });
+        
+        // Update floor background position based on scroll
+        function updateFloorPosition() {
+            if (floor) {
+                floor.style.backgroundPositionX = (-scroller.scrollLeft) + 'px';
+            }
+        }
+        
+        // Keyboard navigation (arrow keys)
+        document.addEventListener('keydown', function(e) {
+            const step = 200;
+            const maxScroll = scroller.scrollWidth - scroller.clientWidth;
             
-            document.addEventListener('DOMContentLoaded', async function() {
-                // Wait for Firebase to initialize
-                setTimeout(async function() {
-                    await loadLocalMuseumArtworks();
-                }, 1500);
-            });
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                scroller.scrollLeft = Math.min(scroller.scrollLeft + step, maxScroll);
+                updateFloorPosition();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                scroller.scrollLeft = Math.max(scroller.scrollLeft - step, 0);
+                updateFloorPosition();
+            }
+        });
+        
+        // Enable smooth touch scrolling for touchpads
+        scroller.style.scrollBehavior = 'smooth';
+        
+        // ============================================
+        // DYNAMIC ARTWORK LOADER FOR LOCAL MUSEUM
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for Firebase to initialize
+            setTimeout(async function() {
+                await loadLocalMuseumArtworks();
+            }, 1500);
+        });
+        
+        async function loadLocalMuseumArtworks() {
+            console.log('Loading Local Museum artworks...');
+            const wall = document.getElementById('artGallery');
+            if (!wall) {
+                console.error('ArtGallery container not found');
+                return;
+            }
             
-            async function loadLocalMuseumArtworks() {
-                console.log('Loading Local Museum artworks...');
-                const wall = document.getElementById('artGallery');
-                if (!wall) {
-                    console.error('ArtGallery container not found');
-                    return;
-                }
+            try {
+                // Get public artworks filtered by 'local' category
+                const result = await getPublicArtworks('local');
                 
-                try {
-                    // Get public artworks filtered by 'local' category
-                    const result = await getPublicArtworks('local');
-                    
-                    if (!result || !result.success) {
-                        console.error('Error loading artworks:', result?.error);
-                        const backButton = wall.querySelector('.bckbtn');
-                        wall.innerHTML = '';
-                        if (backButton) {
-                            wall.appendChild(backButton);
-                        }
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'art';
-                        errorDiv.innerHTML = '<p>Error loading artworks</p>';
-                        wall.appendChild(errorDiv);
-                        return;
-                    }
-                    
-                    const localArtworks = result.artworks || [];
-                    
-                    console.log('Local artworks found:', localArtworks.length);
-                    
-                    if (localArtworks.length === 0) {
-                        const backButton = wall.querySelector('.bckbtn');
-                        wall.innerHTML = '';
-                        if (backButton) {
-                            wall.appendChild(backButton);
-                        }
-                        const emptyDiv = document.createElement('div');
-                        emptyDiv.className = 'art';
-                        emptyDiv.innerHTML = '<p>No artworks uploaded yet</p>';
-                        wall.appendChild(emptyDiv);
-                        return;
-                    }
-                    
-                    // Clear loading message but preserve the back button
+                if (!result || !result.success) {
+                    console.error('Error loading artworks:', result?.error);
                     const backButton = wall.querySelector('.bckbtn');
                     wall.innerHTML = '';
                     if (backButton) {
                         wall.appendChild(backButton);
                     }
-                    
-                    // Create artwork elements for each local artwork
-                    localArtworks.forEach(function(artwork) {
-                        const artDiv = document.createElement('div');
-                        artDiv.className = 'art';
-                        artDiv.innerHTML = `
-                            <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
-                            <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
-                            <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description || ''}</p>
-                        `;
-                        wall.appendChild(artDiv);
-                    });
-                    
-                    console.log('Artworks loaded successfully!');
-                    
-                } catch (error) {
-                    console.error('Error loading artworks:', error);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'art';
+                    errorDiv.innerHTML = '<p>Error loading artworks</p>';
+                    wall.appendChild(errorDiv);
+                    return;
                 }
+                
+                const localArtworks = result.artworks || [];
+                
+                console.log('Local artworks found:', localArtworks.length);
+                
+                if (localArtworks.length === 0) {
+                    const backButton = wall.querySelector('.bckbtn');
+                    wall.innerHTML = '';
+                    if (backButton) {
+                        wall.appendChild(backButton);
+                    }
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'art';
+                    emptyDiv.innerHTML = '<p>No artworks uploaded yet</p>';
+                    wall.appendChild(emptyDiv);
+                    return;
+                }
+                
+                // Clear loading message but preserve the back button
+                const backButton = wall.querySelector('.bckbtn');
+                wall.innerHTML = '';
+                if (backButton) {
+                    wall.appendChild(backButton);
+                }
+                
+                // Create artwork elements for each local artwork
+                localArtworks.forEach(function(artwork) {
+                    const artDiv = document.createElement('div');
+                    artDiv.className = 'art';
+                    artDiv.innerHTML = `
+                        <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
+                        <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
+                        <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description || ''}</p>
+                    `;
+                    wall.appendChild(artDiv);
+                });
+                
+                console.log('Artworks loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error loading artworks:', error);
             }
-        </script>
+        }
+    </script>
 
 
 </body>
