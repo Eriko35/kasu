@@ -2,7 +2,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
   import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-  import {getFirestore, setDoc, doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, deleteDoc, runTransaction, increment} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  import {getFirestore, setDoc, doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, deleteDoc, runTransaction, increment, updateDoc} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
   
   // Supabase Storage import
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -816,6 +816,7 @@
   window.where = where;
   window.orderBy = orderBy;
   window.deleteDoc = deleteDoc;
+  window.updateDoc = updateDoc;
   
   // App-specific functions
   window.saveArtworkToFirestore = saveArtworkToFirestore;

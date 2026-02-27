@@ -120,6 +120,379 @@
         .delete-btn:active {
             transform: translateY(0);
         }
+        
+        /* Bio Editor Modal Styles */
+        .bio-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .bio-modal-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+        }
+        
+        .version-history-modal {
+            max-width: 700px;
+        }
+        
+        .bio-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .bio-modal-header h2 {
+            margin: 0;
+            color: #fff;
+            font-size: 20px;
+        }
+        
+        .bio-modal-close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .bio-modal-close:hover {
+            color: #fff;
+        }
+        
+        .bio-modal-body {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .bio-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid #333;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .bio-footer-left, .bio-footer-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .bio-panel {
+            width: 100%;
+        }
+        
+        .bio-editor-instructions {
+            color: #aaa;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .bio-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .bio-textarea:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .bio-textarea::placeholder {
+            color: #666;
+        }
+        
+        .bio-char-count {
+            text-align: right;
+            color: #888;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        .bio-char-count .warning {
+            color: #f39c12;
+        }
+        
+        .bio-editor-tips {
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .bio-preview-label {
+            background: #2d2d44;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        
+        .bio-preview-label span {
+            color: #6c5ce7;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .bio-preview-content {
+            background: #0f0f1a;
+            padding: 20px;
+            border-radius: 8px;
+            color: #ddd;
+            line-height: 1.8;
+            min-height: 150px;
+            font-size: 15px;
+        }
+        
+        .bio-preview-content strong {
+            color: #fff;
+            font-weight: 700;
+        }
+        
+        .bio-preview-content em {
+            color: #a29bfe;
+        }
+        
+        /* Bio Buttons */
+        .btn-preview, .btn-edit, .btn-save, .btn-draft, .btn-history, .btn-cancel {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-preview {
+            background: #2d2d44;
+            color: #aaa;
+        }
+        
+        .btn-preview:hover {
+            background: #3d3d54;
+            color: #fff;
+        }
+        
+        .btn-edit {
+            background: #2d2d44;
+            color: #6c5ce7;
+        }
+        
+        .btn-edit:hover {
+            background: #3d3d54;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+        }
+        
+        .btn-save:hover {
+            background: linear-gradient(135deg, #5b4cdb, #9089f0);
+            transform: translateY(-1px);
+        }
+        
+        .btn-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-draft {
+            background: transparent;
+            border: 1px solid #444;
+            color: #aaa;
+        }
+        
+        .btn-draft:hover {
+            background: #2d2d44;
+            border-color: #555;
+            color: #fff;
+        }
+        
+        .btn-history {
+            background: transparent;
+            border: 1px solid #444;
+            color: #aaa;
+        }
+        
+        .btn-history:hover {
+            background: #2d2d44;
+            border-color: #555;
+            color: #fff;
+        }
+        
+        .btn-cancel {
+            background: #2d2d44;
+            color: #aaa;
+        }
+        
+        .btn-cancel:hover {
+            background: #3d3d54;
+            color: #fff;
+        }
+        
+        .btn-icon {
+            font-size: 16px;
+        }
+        
+        /* Bio Actions in Profile */
+        .bio-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .edit-bio-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid #6c5ce7;
+            border-radius: 4px;
+            color: #6c5ce7;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        
+        .edit-bio-btn:hover {
+            background: #6c5ce7;
+            color: #fff;
+        }
+        
+        .bio-version, .bio-updated {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* Version History List */
+        .version-history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .no-versions {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+        
+        .version-item {
+            background: #0f0f1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .version-number {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .version-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .version-status.published {
+            background: rgba(108, 92, 231, 0.2);
+            color: #a29bfe;
+        }
+        
+        .version-status.draft {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+        
+        .version-date {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .version-preview {
+            color: #aaa;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        
+        .version-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-restore, .btn-view {
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-restore {
+            background: #6c5ce7;
+            color: #fff;
+        }
+        
+        .btn-restore:hover {
+            background: #5b4cdb;
+        }
+        
+        .btn-view {
+            background: transparent;
+            border: 1px solid #444;
+            color: #aaa;
+        }
+        
+        .btn-view:hover {
+            background: #2d2d44;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -284,6 +657,13 @@
                         <h1 id="artistName">Artist Name</h1>
                         <p id="artistUsername" class="artist-username">@artistusername</p>
                         <p id="artistBio" class="artist-bio">Artist bio goes here...</p>
+                        <div class="bio-actions">
+                            <button class="edit-bio-btn" onclick="openBioEditor()">
+                                <span>✏️</span> Edit Bio
+                            </button>
+                            <span id="bioVersionNumber" class="bio-version"></span>
+                            <span id="bioLastUpdated" class="bio-updated"></span>
+                        </div>
                         <div class="artist-stats">
                             <div class="stat-item">
                                 <span id="totalArtworksCount" class="stat-number">0</span>
@@ -500,6 +880,82 @@
                 </div>
             </div>
 
+            <!-- Bio Editor Modal -->
+            <div id="bioEditorModal" class="bio-modal" style="display:none;">
+                <div class="bio-modal-content">
+                    <div class="bio-modal-header">
+                        <h2>Edit Biography</h2>
+                        <span class="bio-modal-close" onclick="closeBioEditor()">&times;</span>
+                    </div>
+                    <div class="bio-modal-body">
+                        <!-- Edit Panel -->
+                        <div id="bioEditPanel" class="bio-panel">
+                            <div class="bio-editor-instructions">
+                                <p>Write your biography below. You can use **bold** and *italic* formatting.</p>
+                            </div>
+                            <textarea 
+                                id="bioEditorTextarea" 
+                                class="bio-textarea" 
+                                placeholder="Tell us about yourself, your art, your inspiration..."
+                                maxlength="2000"
+                            ></textarea>
+                            <div class="bio-char-count">
+                                <span id="bioCharCount">0/2000</span>
+                            </div>
+                            <div class="bio-editor-tips">
+                                <small>Tips: Use **text** for bold, *text* for italic</small>
+                            </div>
+                        </div>
+                        <!-- Preview Panel -->
+                        <div id="bioPreviewPanel" class="bio-panel" style="display:none;">
+                            <div class="bio-preview-label">
+                                <span>Preview Mode</span>
+                            </div>
+                            <div id="bioPreviewContent" class="bio-preview-content"></div>
+                        </div>
+                    </div>
+                    <div class="bio-modal-footer">
+                        <div class="bio-footer-left">
+                            <button type="button" class="btn-history" onclick="openVersionHistory()">
+                                <span class="btn-icon">📜</span> Version History
+                            </button>
+                        </div>
+                        <div class="bio-footer-right">
+                            <button type="button" id="previewBioBtn" class="btn-preview" onclick="previewBio()">
+                                <span class="btn-icon">👁</span> Preview
+                            </button>
+                            <button type="button" id="backToEditBtn" class="btn-edit" onclick="exitPreviewMode()" style="display:none;">
+                                <span class="btn-icon">✏</span> Edit
+                            </button>
+                            <button type="button" id="saveDraftBtn" class="btn-draft" onclick="saveBioDraftFromEditor()">
+                                Save Draft
+                            </button>
+                            <button type="button" id="saveBioBtn" class="btn-save" onclick="saveBioFromEditor()">
+                                <span class="btn-icon">💾</span> Publish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Version History Modal -->
+            <div id="versionHistoryModal" class="bio-modal" style="display:none;">
+                <div class="bio-modal-content version-history-modal">
+                    <div class="bio-modal-header">
+                        <h2>Biography Version History</h2>
+                        <span class="bio-modal-close" onclick="closeVersionHistory()">&times;</span>
+                    </div>
+                    <div class="bio-modal-body">
+                        <div id="versionHistoryList" class="version-history-list">
+                            <!-- Version items will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="bio-modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeVersionHistory()">Close</button>
+                    </div>
+                </div>
+            </div>
+
             <footer>
                 <p>Group 1: Boomtarat<br>
                 <a href="samuelnathan4003@gmail.com">boomtarat@example.com</a>
@@ -538,6 +994,7 @@
     </main>
     <script src="js/firebase.js" type="module"></script>
     <script src="js/supabase-client.js" type="module"></script>
+    <script src="js/bio-manager.js"></script>
     <script src="js/home2.js"></script>
 </body>
 </html>
