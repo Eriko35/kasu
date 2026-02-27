@@ -60,13 +60,15 @@ function validateImageFile(file) {
  * Generate unique file path for artwork
  * @param {string} userId - Artist's user ID
  * @param {string} fileName - Original file name
+ * @param {string} category - Category (local or national)
  * @returns {string} - Unique file path
  */
-function generateArtworkPath(userId, fileName) {
+function generateArtworkPath(userId, fileName, category = 'local') {
   const timestamp = Date.now();
   const randomSuffix = Math.random().toString(36).substring(2, 8);
   const extension = fileName.split('.').pop();
-  return `artworks/${userId}/${timestamp}-${randomSuffix}.${extension}`;
+  // Include category in the path: artworks/{category}/{userId}/{timestamp}-{random}.{ext}
+  return `artworks/${category}/${userId}/${timestamp}-${randomSuffix}.${extension}`;
 }
 
 // ============================================
@@ -77,9 +79,10 @@ function generateArtworkPath(userId, fileName) {
  * Upload artwork image to Supabase Storage
  * @param {File} file - The image file to upload
  * @param {string} userId - The artist's user ID
+ * @param {string} category - The category (local or national)
  * @returns {Promise<Object>} - Result with download URL or error
  */
-async function uploadArtworkImage(file, userId) {
+async function uploadArtworkImage(file, userId, category = 'local') {
   try {
     // Validate file
     const validation = validateImageFile(file);
@@ -87,8 +90,8 @@ async function uploadArtworkImage(file, userId) {
       throw new Error(validation.error);
     }
     
-    // Generate unique file path
-    const filePath = generateArtworkPath(userId, file.name);
+    // Generate unique file path with category
+    const filePath = generateArtworkPath(userId, file.name, category);
     
     // Upload file to Supabase Storage
     const { data, error } = await supabase.storage
