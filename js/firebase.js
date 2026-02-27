@@ -63,6 +63,16 @@
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
   
   // ============================================
+  // PROFILE PICTURE SPECIFIC CONSTANTS
+  // ============================================
+  
+  // Maximum profile picture size (5MB - smaller than artwork)
+  const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024;
+  
+  // Profile picture storage folder
+  const PROFILE_PICTURE_FOLDER = 'profile-pictures';
+  
+  // ============================================
   // VALIDATION FUNCTIONS
   // ============================================
   
@@ -184,6 +194,178 @@
       return { success: true };
     } catch (error) {
       console.error('Delete error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // ============================================
+  // PROFILE PICTURE FUNCTIONS
+  // ============================================
+  
+  /**
+   * Validate profile picture file (stricter than artwork)
+   * @param {File} file - The file to validate
+   * @returns {Object} - Validation result with isValid and error message
+   */
+  function validateProfilePicture(file) {
+    if (!file) {
+      return { isValid: false, error: 'No file provided' };
+    }
+    
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      return { 
+        isValid: false, 
+        error: `Invalid file type. Allowed: JPEG, PNG, GIF, WebP` 
+      };
+    }
+    
+    if (file.size > MAX_PROFILE_PICTURE_SIZE) {
+      return { 
+        isValid: false, 
+        error: `File too large. Maximum size: 5MB` 
+      };
+    }
+    
+    return { isValid: true, error: null };
+  }
+  
+  /**
+   * Generate unique file path for profile picture
+   * @param {string} userId - User's ID
+   * @param {string} fileName - Original file name
+   * @returns {string} - Unique file path
+   */
+  function generateProfilePicturePath(userId, fileName) {
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const extension = fileName.split('.').pop();
+    return `${PROFILE_PICTURE_FOLDER}/${userId}/${timestamp}-${randomSuffix}.${extension}`;
+  }
+  
+  /**
+   * Upload profile picture to Supabase Storage
+   * @param {File} file - The image file to upload
+   * @param {string} userId - The user's ID
+   * @returns {Promise<Object>} - Result with download URL or error
+   */
+  async function uploadProfilePicture(file, userId) {
+    try {
+      // Validate file
+      const validation = validateProfilePicture(file);
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+      
+      // Generate unique file path
+      const filePath = generateProfilePicturePath(userId, file.name);
+      
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('storage')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('storage')
+        .getPublicUrl(filePath);
+      
+      return {
+        success: true,
+        url: urlData.publicUrl,
+        path: filePath,
+        fileName: file.name,
+        fileSize: file.size,
+        contentType: file.type
+      };
+      
+    } catch (error) {
+      console.error('Profile picture upload error:', error);
+      return {
+        success: false,
+        error: error.message || 'Upload failed'
+      };
+    }
+  }
+  
+  /**
+   * Delete profile picture from Supabase Storage
+   * @param {string} filePath - The path of the file to delete
+   * @returns {Promise<Object>} - Result with success or error
+   */
+  async function deleteProfilePicture(filePath) {
+    try {
+      // Don't delete if it's the default avatar
+      if (!filePath || filePath.includes('default') || filePath.includes('placeholder')) {
+        return { success: true, message: 'Default avatar, skipped deletion' };
+      }
+      
+      const { data, error } = await supabase.storage
+        .from('storage')
+        .remove([filePath]);
+      
+      if (error) {
+        throw error;
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Delete profile picture error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Complete profile picture upload flow (upload + update profile)
+   * @param {File} file - The image file
+   * @param {string} userId - The user's ID
+   * @param {string} oldAvatarPath - Optional: Old avatar path to delete
+   * @returns {Promise<Object>} - Complete result with avatar URL
+   */
+  async function uploadAndUpdateProfilePicture(file, userId, oldAvatarPath = null) {
+    try {
+      // Step 1: Upload new profile picture
+      const uploadResult = await uploadProfilePicture(file, userId);
+      
+      if (!uploadResult.success) {
+        return uploadResult;
+      }
+      
+      // Step 2: Delete old profile picture if exists and different from new one
+      if (oldAvatarPath && oldAvatarPath !== uploadResult.path) {
+        await deleteProfilePicture(oldAvatarPath);
+      }
+      
+      // Step 3: Update user profile with new avatar URL
+      const profileUpdateResult = await updateUserProfile(userId, {
+        avatarUrl: uploadResult.url
+      });
+      
+      if (!profileUpdateResult.success) {
+        // If profile update fails, delete the uploaded image
+        await deleteProfilePicture(uploadResult.path);
+        return {
+          success: false,
+          error: 'Failed to update profile: ' + profileUpdateResult.error
+        };
+      }
+      
+      return {
+        success: true,
+        avatarUrl: uploadResult.url,
+        path: uploadResult.path,
+        message: 'Profile picture updated successfully'
+      };
+      
+    } catch (error) {
+      console.error('Complete profile picture upload error:', error);
       return { success: false, error: error.message };
     }
   }
@@ -839,6 +1021,13 @@
   window.getUserVotes = getUserVotes;
   window.initializeVotingSystem = initializeVotingSystem;
   
+  // Profile picture upload functions
+  window.validateProfilePicture = validateProfilePicture;
+  window.uploadProfilePicture = uploadProfilePicture;
+  window.deleteProfilePicture = deleteProfilePicture;
+  window.uploadAndUpdateProfilePicture = uploadAndUpdateProfilePicture;
+  window.generateProfilePicturePath = generateProfilePicturePath;
+  
   /**
    * Complete artwork upload flow (upload + save to database)
    * @param {File} file - The image file
@@ -914,3 +1103,14 @@
   window.getUserProfile = getUserProfile;
   window.updateUserProfile = updateUserProfile;
   window.checkUserPermission = checkUserPermission;
+  
+  // Profile picture upload functions - exported for global use
+  window.validateProfilePicture = validateProfilePicture;
+  window.uploadProfilePicture = uploadProfilePicture;
+  window.deleteProfilePicture = deleteProfilePicture;
+  window.uploadAndUpdateProfilePicture = uploadAndUpdateProfilePicture;
+  window.generateProfilePicturePath = generateProfilePicturePath;
+  
+  // Profile picture validation constants
+  window.MAX_PROFILE_PICTURE_SIZE = MAX_PROFILE_PICTURE_SIZE;
+  window.ALLOWED_IMAGE_TYPES = ALLOWED_IMAGE_TYPES;
