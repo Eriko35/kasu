@@ -26,28 +26,31 @@ const scroller = document.querySelector('.horizontal-scroll');
 const floor = document.querySelector('.floor');
 const step = 200; // increase this for faster arrow scroll
 const stopscroll = document.querySelector('.fullArtBox');
-// Existing wheel scroll → horizontal movement
 
-// Always attach listeners
-scroller.addEventListener('wheel', (e) => {
-    if (getComputedStyle(stopscroll).display === "none") {
-        e.preventDefault();
-        scroller.scrollLeft += e.deltaY;
-        syncFloor();
-    } else {
-        // Allow normal vertical scroll (do nothing)
-    }
-}, { passive: false });
+// Only attach scroll listeners if elements exist
+if (scroller && stopscroll) {
+    // Existing wheel scroll → horizontal movement
 
-scroller.addEventListener('scroll', () => {
-    if (getComputedStyle(stopscroll).display === "none") {
-        syncFloor();
-    }
-});
+    // Always attach listeners
+    scroller.addEventListener('wheel', (e) => {
+        if (getComputedStyle(stopscroll).display === "none") {
+            e.preventDefault();
+            scroller.scrollLeft += e.deltaY;
+            syncFloor();
+        } else {
+            // Allow normal vertical scroll (do nothing)
+        }
+    }, { passive: false });
 
-window.addEventListener('keydown', (e) => {
-    if (getComputedStyle(stopscroll).display === "none") {
-        const max = scroller.scrollWidth - scroller.clientWidth;
+    scroller.addEventListener('scroll', () => {
+        if (getComputedStyle(stopscroll).display === "none") {
+            syncFloor();
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (getComputedStyle(stopscroll).display === "none") {
+            const max = scroller.scrollWidth - scroller.clientWidth;
 
         if (e.key === "ArrowRight") {
             scroller.scrollLeft = Math.min(scroller.scrollLeft + step, max);
@@ -62,6 +65,7 @@ window.addEventListener('keydown', (e) => {
         // Do nothing if stopscroll is visible
     }
 });
+}
 
 function syncFloor() {
     floor.style.backgroundPositionX = `${-scroller.scrollLeft}px`;
