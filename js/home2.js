@@ -909,3 +909,4 @@ async function showProfilePictureUploadButton() {
         console.error('Error showing profile picture upload button:', error);
     }
 }
+
