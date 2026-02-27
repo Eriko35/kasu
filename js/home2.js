@@ -3,7 +3,7 @@ let themeSwitch = localStorage.getItem('homeTheme');
 let bb = document.getElementById('themes');
 bb.value = themeSwitch;
 var fullAucBox = document.getElementById('fullAucBox');
-var fullAuc = document.getElementById('fullAucImg');
+var fullAuc = document.getElementById('artImg');
 // User role tracking
 let currentUserRole = null;
 let currentUserId = null;
