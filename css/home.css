@@ -303,10 +303,12 @@ body {
         0 6px 15px rgba(0,0,0,0.35);
 }
 .artwork {
-    max-height: 200px;
-    max-width: 200px;
-    width: 100%;
-    height: auto;
+    background: #EDE1E1;
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    box-shadow: 0 0px 8px rgba(0, 0, 0, 0.35);
+    display: block;
 }
 .bodyTitle {
     color: var(--text-color);
@@ -467,9 +469,9 @@ footer {
 }
 .aucart img {
     display: flex;
-    object-fit: contain;
-    height: 100%;
-    width: 100%;
+    object-fit: cover;
+    width: 200px;
+    height: 200px;
 }
 #fullAucBox {
     height: max-content;
