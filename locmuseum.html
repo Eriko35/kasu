@@ -266,6 +266,64 @@
             z-index: 10;
         }
         
+        /* Vote Button Styles */
+        .vote-section {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .vote-btn {
+            padding: 10px 25px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .vote-btn:hover {
+            background-color: #555;
+            transform: translateY(-2px);
+        }
+        .vote-btn.voted {
+            background-color: #ffc107; /* Gold */
+            color: #000;
+        }
+        .vote-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* Votes Left Indicator */
+        .votes-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none; /* Hidden by default until logged in */
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .votes-indicator span {
+            color: #dc3545;
+            font-size: 18px;
+        }
+        
         /* Responsive adjustments for smaller screens */
         @media (max-width: 768px) {
             .fullArtContainer {
@@ -286,6 +344,9 @@
 <body>
     <div class="horizontal-scroll" id="scroller">
         <button id="addArtworkBtn" class="add-artwork-btn" onclick="openAddArtworkModal()">+ Add Artwork</button>
+        <div class="votes-indicator" id="votesIndicator">
+            Votes Left: <span id="votesLeft">3</span>
+        </div>
         
         <!-- Full Screen Modal -->
         <div class="fullArtBox" id="fullArtModal" style="display: none;">
@@ -301,6 +362,10 @@
                             <div class="artDescBox"><span id="fullArtArtist">Artist</span>, <span id="fullArtDate">Year</span> </div> 
                             <div class="artDescBox"> <span id="fullArtMedium">Art Piece</span></div>
                             <div class="artDescBox"> Local Museum Collection</div>
+                        </div>
+                        <div class="vote-section">
+                            <button id="voteBtn" class="vote-btn" onclick="voteForCurrentArtwork()">Vote</button>
+                            <span id="voteCount" class="vote-count">0 votes</span>
                         </div>
                     </div>
                     <div class="artMainDesc">
@@ -413,6 +478,7 @@
         let currentUserRole = null;
         let currentUserId = null;
         let loadedArtworks = []; // Store loaded artworks
+        let currentUserVotes = new Set(); // Store IDs of artworks user voted for
         
         document.addEventListener('DOMContentLoaded', async function() {
             // Wait for Firebase to initialize
@@ -438,6 +504,14 @@
                                 addBtn.style.display = 'block';
                             }
                         }
+                        
+                        // Load user votes
+                        const votesResult = await getUserVotes(userId);
+                        if (votesResult.success) {
+                            currentUserVotes = new Set(votesResult.votes);
+                            console.log('Loaded user votes:', currentUserVotes.size);
+                            updateVotesLeftDisplay();
+                        }
                     }
                 } catch (error) {
                     console.error('Error checking user role:', error);
@@ -446,6 +520,15 @@
             
             // Load artworks for all users
             await loadLocalMuseumArtworks();
+        }
+        
+        function updateVotesLeftDisplay() {
+            const votesIndicator = document.getElementById('votesIndicator');
+            const votesLeftSpan = document.getElementById('votesLeft');
+            
+            const remaining = Math.max(0, 3 - currentUserVotes.size);
+            votesLeftSpan.textContent = remaining;
+            votesIndicator.style.display = 'block';
         }
         
         async function loadLocalMuseumArtworks() {
@@ -534,6 +617,8 @@
         // FULL SCREEN VIEW FUNCTIONS
         // ============================================
         
+        let currentArtworkIndex = -1;
+
         async function openFullArt(index) {
             const artwork = loadedArtworks[index];
             if (!artwork) return;
@@ -544,6 +629,22 @@
             document.getElementById('fullArtDate').textContent = new Date(artwork.createdAt).getFullYear();
             document.getElementById('fullArtDesc').textContent = artwork.description || 'No description available.';
             
+            currentArtworkIndex = index;
+            
+            // Update Vote UI
+            const voteBtn = document.getElementById('voteBtn');
+            const voteCount = document.getElementById('voteCount');
+            
+            voteCount.textContent = (artwork.voteCount || 0) + ' votes';
+            
+            if (currentUserVotes.has(artwork.id)) {
+                voteBtn.textContent = 'Voted';
+                voteBtn.classList.add('voted');
+            } else {
+                voteBtn.textContent = 'Vote';
+                voteBtn.classList.remove('voted');
+            }
+
             // Reset artist info while loading
             document.getElementById('fullArtArtist').textContent = 'Loading...';
             
@@ -568,6 +669,52 @@
         
         function closeFullArt() {
             document.getElementById('fullArtModal').style.display = 'none';
+        }
+        
+        async function voteForCurrentArtwork() {
+            if (currentArtworkIndex === -1) return;
+            
+            const userId = localStorage.getItem('loggedInUserId');
+            if (!userId) {
+                alert('You must be logged in to vote.');
+                return;
+            }
+            
+            const artwork = loadedArtworks[currentArtworkIndex];
+            const voteBtn = document.getElementById('voteBtn');
+            const voteCount = document.getElementById('voteCount');
+            
+            // Optimistic UI update (optional, but good for UX)
+            const originalText = voteBtn.textContent;
+            voteBtn.disabled = true;
+            
+            try {
+                const result = await toggleArtworkVote(userId, artwork.id);
+                
+                if (result.success) {
+                    // Update local state
+                    artwork.voteCount = result.newCount;
+                    voteCount.textContent = result.newCount + ' votes';
+                    
+                    if (result.voted) {
+                        currentUserVotes.add(artwork.id);
+                        voteBtn.textContent = 'Voted';
+                        voteBtn.classList.add('voted');
+                    } else {
+                        currentUserVotes.delete(artwork.id);
+                        voteBtn.textContent = 'Vote';
+                        voteBtn.classList.remove('voted');
+                    }
+                    updateVotesLeftDisplay();
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Vote error:', error);
+                alert('An error occurred while voting.');
+            } finally {
+                voteBtn.disabled = false;
+            }
         }
 
         // ============================================

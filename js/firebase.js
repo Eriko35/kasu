@@ -513,10 +513,37 @@
    */
   async function toggleArtworkVote(userId, artworkId) {
     try {
+      // 1. Clean up invalid votes (artworks that were deleted) and count valid ones
+      // This ensures the limit of 3 is based on *existing* artworks
+      const votesRef = collection(db, 'users', userId, 'votes');
+      const votesSnapshot = await getDocs(votesRef);
+      
+      let validVoteCount = 0;
+      const cleanupPromises = [];
+      
+      for (const voteDoc of votesSnapshot.docs) {
+        // Don't count the one we are toggling right now (we'll handle it in transaction)
+        if (voteDoc.id === artworkId) continue;
+        
+        const votedArtworkRef = doc(db, 'artworks', voteDoc.id);
+        const votedArtworkSnap = await getDoc(votedArtworkRef);
+        
+        if (!votedArtworkSnap.exists()) {
+          // Artwork deleted, remove this vote record so user gets their vote back
+          cleanupPromises.push(deleteDoc(doc(db, 'users', userId, 'votes', voteDoc.id)));
+        } else {
+          validVoteCount++;
+        }
+      }
+      
+      // Execute cleanup if needed
+      if (cleanupPromises.length > 0) {
+        await Promise.all(cleanupPromises);
+      }
+
       return await runTransaction(db, async (transaction) => {
         const artworkRef = doc(db, 'artworks', artworkId);
         const userVoteRef = doc(db, 'users', userId, 'votes', artworkId);
-        const userRef = doc(db, 'users', userId);
         
         const artworkDoc = await transaction.get(artworkRef);
         if (!artworkDoc.exists()) {
@@ -524,12 +551,12 @@
         }
         
         const artworkData = artworkDoc.data();
-        if (artworkData.category !== 'local') {
+        // Allow voting if category is 'local' OR if category is missing (legacy artworks assumed local)
+        if (artworkData.category && artworkData.category !== 'local') {
           throw "Voting is only allowed for Local Museum artworks";
         }
         
         const userVoteDoc = await transaction.get(userVoteRef);
-        const userDoc = await transaction.get(userRef);
         
         let newCount = artworkData.voteCount || 0;
         let voted = false;
@@ -538,26 +565,16 @@
           // Remove vote
           transaction.delete(userVoteRef);
           transaction.update(artworkRef, { voteCount: increment(-1) });
-          // Decrement user vote count if user doc exists
-          if (userDoc.exists()) {
-            transaction.update(userRef, { voteCount: increment(-1) });
-          }
           newCount = Math.max(0, newCount - 1);
           voted = false;
         } else {
           // Add vote - Check limit
-          let userVoteCount = 0;
-          if (userDoc.exists()) {
-            userVoteCount = userDoc.data().voteCount || 0;
-          }
-          
-          if (userVoteCount >= 3) {
+          if (validVoteCount >= 3) {
             throw "You have reached the limit of 3 votes.";
           }
           
           transaction.set(userVoteRef, { timestamp: new Date().toISOString() });
           transaction.update(artworkRef, { voteCount: increment(1) });
-          transaction.set(userRef, { voteCount: increment(1) }, { merge: true });
           
           newCount++;
           voted = true;
@@ -578,6 +595,54 @@
         return { success: true, votes: snapshot.docs.map(doc => doc.id) };
     } catch (error) {
         return { success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Initialize/Migrate data for voting system
+   * Ensures all artworks have category and voteCount fields
+   * Run this function in console: initializeVotingSystem()
+   */
+  async function initializeVotingSystem() {
+    try {
+      const artworksRef = collection(db, 'artworks');
+      const snapshot = await getDocs(artworksRef);
+      
+      let updatedCount = 0;
+      const updatePromises = [];
+      
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const updates = {};
+        let needsUpdate = false;
+        
+        // Default category to 'local' if missing
+        if (!data.category) {
+          updates.category = 'local';
+          needsUpdate = true;
+        }
+        
+        // Initialize voteCount if missing
+        if (data.voteCount === undefined) {
+          updates.voteCount = 0;
+          needsUpdate = true;
+        }
+        
+        if (needsUpdate) {
+          updatePromises.push(setDoc(doc(db, 'artworks', docSnap.id), updates, { merge: true }));
+          updatedCount++;
+        }
+      });
+      
+      if (updatePromises.length > 0) {
+        await Promise.all(updatePromises);
+      }
+      
+      console.log(`Voting system initialized. Updated ${updatedCount} artworks.`);
+      return { success: true, updatedCount };
+    } catch (error) {
+      console.error('Initialization error:', error);
+      return { success: false, error: error.message };
     }
   }
   
@@ -695,6 +760,7 @@
   window.generateArtworkPath = generateArtworkPath;
   window.toggleArtworkVote = toggleArtworkVote;
   window.getUserVotes = getUserVotes;
+  window.initializeVotingSystem = initializeVotingSystem;
   
   /**
    * Complete artwork upload flow (upload + save to database)
