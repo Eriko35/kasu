@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Museum</title>
+    <title>Document</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,6 +14,7 @@
         .scene {
             display: flex;
             flex-direction: column;
+           
             perspective: 1000px;
             transform-style: preserve-3d;
         }
@@ -26,18 +27,19 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            cursor: pointer;
         }
         .floor {
             will-change: transform, background-position;
             position: fixed;
             bottom: -75px;
             left: -150px;
-            width: 150%;
+            width: 120vw;
             height: 20vh;
+
             background-image: url('css/image/floor.webp');
             background-repeat: repeat;
             background-size: 300px 300px;
+
             transform: perspective(1000px) rotateX(60deg);
         }
         .wall { 
@@ -51,6 +53,7 @@
             background-size: 300px 300px;
             background-position: top left;
         }
+        
         .horizontal-scroll {
             width: 100vw;
             overflow-x: scroll;
@@ -58,314 +61,83 @@
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
-        .bckbtn {
-            z-index: 2;
-            position: fixed;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.226);
-            width: 50px;
-            color: rgb(255, 255, 255);
-            text-decoration: none;
-            padding: 50vh 5px;
-            left: 0;
-            top: 0;
-        }
-        /* Full Art Container Styles */
-        .fullArtBox {
-            z-index: 100;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            display: flex;
-            top: 0;
-            left: 0;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .fullArtContainer {
-            width: 90%;
-            height: 90%;
-            margin: 2.5% 5%;
-            display: flex;
-            align-items: center;
-            background-image: url('css/image/paper.webp');
-            background-repeat: repeat;
-            background-size: 300px 300px;
-            background-position: top left;
-            overflow: hidden;
-            position: relative;
-            background-color: #f4f1ea;
-        }
-        .artDiv {
-            width: 40%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .artDiv img {
-            max-width: 90%;
-            max-height: 90%;
-            box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
-            object-fit: contain;
-        }
-        .artDesc {
-            width: 60%;
-            height: 100%;
-            padding: 5%;
-            overflow-y: auto;
-        }
-        .artTitleBox {
-            font-size: 30px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .fullArtTitle {
-            text-transform: uppercase;
-        }
-        .artDescBox {
-            font-size: 18px;
-            font-weight: normal;
-        }
-        #backFullArt {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-            font-size: 24px;
-            font-weight: bold;
-            z-index: 10;
-        }
-        .vote-box {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 5px;
-            gap: 5px;
-        }
-        .vote-heart {
-            font-size: 24px;
-            cursor: pointer;
-            color: #ccc;
-            line-height: 1;
-            transition: color 0.2s, transform 0.2s;
-        }
-        .vote-heart:hover {
-            transform: scale(1.1);
-        }
-        .vote-heart.active {
-            color: #ff4d4d;
-        }
-        .vote-num {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
     </style>
 </head>
 <body>
     <div class="horizontal-scroll">
-        <div class="wall">
-            <!-- Full Art Popup -->
-            <div class="fullArtBox" style="display: none;">
-                <div class="fullArtContainer">
-                    <a id="backFullArt" onclick="closeFullArt()">X</a>
-                    <div class="artDiv">
-                        <img src="" alt="Artwork">
-                    </div>
-                    <div class="artDesc">
-                        <div class="artTitleBox">
-                            <div>
-                                <span>"<span class="fullArtTitle">Title</span>"</span> 
-                                <div class="artDescBox"><span id="artistId">Artist</span>, <span id="artDate">Date</span> </div> 
-                                <div class="artDescBox">Local Museum</div>
-                            </div>
-                            <div class="vote-box">
-                                <span id="fullArtVoteHeart" class="vote-heart">♡</span>
-                                <span id="fullArtVoteCount" class="vote-num">0</span>
-                            </div>
-                        </div>
-                        <div class="artMainDesc">
-                            <p id="art-desc">Description</p>
-                        </div>
-                    </div>
-                </div>
+        <div class="wall" id="artGallery">
+            <!-- Artworks will be loaded dynamically here -->
+            <div class="art">
+                <p>Loading artworks...</p>
             </div>
-            
-            <a class="bckbtn" href="home2.html">BACK</a>
-
-            <!-- Placeholders that will be replaced -->
-            <div class="art"><p>1</p></div>
-            <div class="art"><p>1</p></div>
-            <div class="art"><p>1</p></div>
-            <div class="art"><p>1</p></div>
-            <div class="art"><p>1</p></div>
         </div>
         <div class="floor">
-            floor test
+                        floor test
         </div>
     </div>
-    <script src="js/firebase.js" type="module"></script>
-    <script src="js/script.js"></script>
-    <script>
-        // ============================================
-        // DYNAMIC ARTWORK LOADER FOR LOCAL MUSEUM
-        // ============================================
-        
-        document.addEventListener('DOMContentLoaded', async function() {
-            setTimeout(async function() {
-                await loadLocalMuseumArtworks();
-            }, 1500);
-        });
-        
-        async function loadLocalMuseumArtworks() {
-            console.log('Loading Local Museum artworks...');
-            const wall = document.querySelector('.wall');
-            if (!wall) return;
+        <script src="js/firebase.js" type="module"></script>
+        <script>
+            // ============================================
+            // DYNAMIC ARTWORK LOADER FOR LOCAL MUSEUM
+            // ============================================
             
-            try {
-                const result = await getPublicArtworks();
-                if (!result.success) return;
-                
-                const localArtworks = result.artworks.filter(art => art.category === 'local');
-                
-                if (localArtworks.length === 0) return;
-                
-                // Remove placeholders
-                wall.querySelectorAll('.art').forEach(el => el.remove());
-                
-                // Get current user votes
-                const userId = localStorage.getItem('loggedInUserId');
-                let userVotes = [];
-                if (userId) {
-                    const voteResult = await getUserVotes(userId);
-                    if (voteResult.success) userVotes = voteResult.votes;
+            document.addEventListener('DOMContentLoaded', async function() {
+                // Wait for Firebase to initialize
+                setTimeout(async function() {
+                    await loadLocalMuseumArtworks();
+                }, 1500);
+            });
+            
+            async function loadLocalMuseumArtworks() {
+                console.log('Loading Local Museum artworks...');
+                const wall = document.getElementById('artGallery');
+                if (!wall) {
+                    console.error('ArtGallery container not found');
+                    return;
                 }
-
-                localArtworks.forEach(function(artwork) {
-                    const artDiv = document.createElement('div');
-                    artDiv.className = 'art';
-                    
-                    // Create content container
-                    const contentDiv = document.createElement('div');
-                    contentDiv.style.width = '100%';
-                    contentDiv.onclick = function() { showFullArt(artwork); };
-                    contentDiv.innerHTML = `
-                        <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
-                        <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
-                        <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description ? artwork.description.substring(0, 30) + '...' : ''}</p>
-                    `;
-                    
-                    // Create vote box
-                    const voteBox = document.createElement('div');
-                    voteBox.className = 'vote-box';
-                    voteBox.onclick = function(e) { e.stopPropagation(); };
-                    
-                    const isVoted = userVotes.includes(artwork.id);
-                    const voteCount = artwork.voteCount || 0;
-                    
-                    voteBox.innerHTML = `
-                        <span class="vote-heart ${isVoted ? 'active' : ''}"> ${isVoted ? '❤' : '♡'} </span>
-                        <span class="vote-num">${voteCount}</span>
-                    `;
-                    
-                    // Attach click listener to heart
-                    const heartSpan = voteBox.querySelector('.vote-heart');
-                    const countSpan = voteBox.querySelector('.vote-num');
-                    heartSpan.onclick = function() { handleVote(artwork, heartSpan, countSpan); };
-                    
-                    artDiv.appendChild(contentDiv);
-                    artDiv.appendChild(voteBox);
-                    wall.appendChild(artDiv);
-                });
                 
-            } catch (error) {
-                console.error('Error loading artworks:', error);
-            }
-        }
-
-        window.handleVote = async function(artwork, heartSpan, countSpan) {
-            const userId = localStorage.getItem('loggedInUserId');
-            if (!userId) {
-                alert("Please log in to vote.");
-                return;
-            }
-            
-            
-            // Call API
-            const result = await toggleArtworkVote(userId, artwork.id);
-            
-            if (result.success) {
-                if (result.voted) {
-                    heartSpan.classList.add('active');
-                    heartSpan.textContent = '❤';
-                } else {
-                    heartSpan.classList.remove('active');
-                    heartSpan.textContent = '♡';
-                }
-                countSpan.textContent = result.newCount;
-                artwork.voteCount = result.newCount;
-            } else {
-                alert(result.error);
-            }
-        }
-
-        async function showFullArt(artwork) {
-            const container = document.querySelector('.fullArtBox');
-            const img = container.querySelector('.artDiv img');
-            const title = container.querySelector('.fullArtTitle');
-            const artistSpan = document.getElementById('artistId');
-            const dateSpan = document.getElementById('artDate');
-            const desc = document.getElementById('art-desc');
-            const heartSpan = document.getElementById('fullArtVoteHeart');
-            const countSpan = document.getElementById('fullArtVoteCount');
-            
-            img.src = artwork.imageUrl;
-            title.textContent = artwork.title || 'Untitled';
-            desc.textContent = artwork.description || 'No description available.';
-            
-            const date = new Date(artwork.createdAt);
-            dateSpan.textContent = !isNaN(date.getTime()) ? date.getFullYear() : '';
-            
-            artistSpan.textContent = 'Loading...';
-            container.style.display = 'flex';
-
-            // Setup Vote
-            const userId = localStorage.getItem('loggedInUserId');
-            let isVoted = false;
-            countSpan.textContent = artwork.voteCount || 0;
-            
-            if (userId) {
-                const voteResult = await getUserVotes(userId);
-                if (voteResult.success) {
-                    isVoted = voteResult.votes.includes(artwork.id);
-                }
-            }
-            
-            heartSpan.className = `vote-heart ${isVoted ? 'active' : ''}`;
-            heartSpan.textContent = isVoted ? '❤' : '♡';
-            
-            // Clone to remove old listeners
-            const newHeart = heartSpan.cloneNode(true);
-            heartSpan.parentNode.replaceChild(newHeart, heartSpan);
-            newHeart.onclick = () => handleVote(artwork, newHeart, countSpan);
-            
-            if (artwork.artistId) {
                 try {
-                    const result = await getUserProfile(artwork.artistId);
-                    if (result.success) {
-                        artistSpan.textContent = result.profile.username || (result.profile.firstName + ' ' + result.profile.lastName);
-                    } else {
-                        artistSpan.textContent = 'Unknown Artist';
+                    // Get public artworks filtered by 'local' category
+                    const result = await getPublicArtworks('local');
+                    
+                    if (!result || !result.success) {
+                        console.error('Error loading artworks:', result?.error);
+                        wall.innerHTML = '<div class="art"><p>Error loading artworks</p></div>';
+                        return;
                     }
-                } catch (e) {
-                    artistSpan.textContent = 'Unknown Artist';
+                    
+                    const localArtworks = result.artworks || [];
+                    
+                    console.log('Local artworks found:', localArtworks.length);
+                    
+                    if (localArtworks.length === 0) {
+                        wall.innerHTML = '<div class="art"><p>No artworks uploaded yet</p></div>';
+                        return;
+                    }
+                    
+                    // Clear loading message
+                    wall.innerHTML = '';
+                    
+                    // Create artwork elements for each local artwork
+                    localArtworks.forEach(function(artwork) {
+                        const artDiv = document.createElement('div');
+                        artDiv.className = 'art';
+                        artDiv.innerHTML = `
+                            <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
+                            <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
+                            <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description || ''}</p>
+                        `;
+                        wall.appendChild(artDiv);
+                    });
+                    
+                    console.log('Artworks loaded successfully!');
+                    
+                } catch (error) {
+                    console.error('Error loading artworks:', error);
                 }
-            } else {
-                artistSpan.textContent = 'Unknown Artist';
             }
-        }
-    </script>
+        </script>
+
+
 </body>
 </html>
