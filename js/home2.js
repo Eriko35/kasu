@@ -57,12 +57,13 @@ function showWarning(message) { showNotification(message, 'warning', 5000); }
 
 function showMenu() {
     menuVisible = !menuVisible;
+    const menuIcon = document.getElementById('menuIcon');
     if (menuVisible) {
-        document.getElementById("sideBar").style.display = "none";
-        img.src = "assets/icons/menuoff.png";
-    } else {
         document.getElementById("sideBar").style.display = "flex";
-        img.src = "assets/icons/menuon.png";
+        if (menuIcon) menuIcon.src = "css/icons/menuoff.webp";
+    } else {
+        document.getElementById("sideBar").style.display = "none";
+        if (menuIcon) menuIcon.src = "css/icons/menuon.webp";
     }
 }
 function removeTheme() {
