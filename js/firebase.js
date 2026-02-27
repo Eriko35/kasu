@@ -720,6 +720,43 @@
       }
   }
 
+  /**
+   * Get website settings (contest title, deadline, etc.)
+   * @returns {Promise<Object>} - Settings object
+   */
+  async function getWebsiteSettings() {
+    try {
+      const docRef = doc(db, 'settings', 'contest');
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        return { success: true, data: docSnap.data() };
+      } else {
+        // Return default if not exists
+        return { success: true, data: { title: 'Current Contest', deadline: '01/01/26' } };
+      }
+    } catch (error) {
+      console.error('Get settings error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Update website settings
+   * @param {Object} settingsData - Data to update
+   * @returns {Promise<Object>} - Result
+   */
+  async function updateWebsiteSettings(settingsData) {
+    try {
+      const docRef = doc(db, 'settings', 'contest');
+      await setDoc(docRef, settingsData, { merge: true });
+      return { success: true };
+    } catch (error) {
+      console.error('Update settings error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Export functions globally for use in other files
   
   // Make functions available globally
@@ -838,6 +875,8 @@
   window.initializeVotingSystem = initializeVotingSystem;
   window.registerNewUser = registerNewUser; // For your sign-up page
   window.createSpecialAdminAccount = createSpecialAdminAccount; // For one-time console execution
+  window.getWebsiteSettings = getWebsiteSettings;
+  window.updateWebsiteSettings = updateWebsiteSettings;
   
   /**
    * Complete artwork upload flow (upload + save to database)

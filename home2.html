@@ -493,6 +493,42 @@
             background: #2d2d44;
             color: #fff;
         }
+        
+        /* Contest Edit Modal */
+        .contest-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .contest-modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .contest-modal h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .contest-modal input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -510,7 +546,10 @@
         <div class="maindiv">
             <div class="homeindex" id="homef">
                 <div class="home-section">
-                    <p class="bigTitle"><span id="contestTitle">Current Contest</span></p>
+                    <p class="bigTitle">
+                        <span id="contestTitle">Current Contest</span>
+                        <button id="editContestBtn" onclick="openContestEditModal()" style="display:none; background:none; border:none; cursor:pointer; font-size:20px;" title="Edit Contest Details">✏️</button>
+                    </p>
                     <p id="subdeadline">Submission Deadline: <span id="deadlineDate"> 01/01/26 </span> </p>
                     <button id="joinContest" style="display:none;">
                     Join Contest
@@ -953,6 +992,25 @@
                     <div class="bio-modal-footer">
                         <button type="button" class="btn-cancel" onclick="closeVersionHistory()">Close</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Contest Edit Modal -->
+            <div id="contestEditModal" class="contest-modal" style="display:none;">
+                <div class="contest-modal-content">
+                    <h2>Edit Contest Details</h2>
+                    <form id="contestEditForm">
+                        <label for="editContestTitle" style="font-weight:bold;">Contest Title</label>
+                        <input type="text" id="editContestTitle" required>
+                        
+                        <label for="editContestDeadline" style="font-weight:bold;">Submission Deadline</label>
+                        <input type="text" id="editContestDeadline" placeholder="e.g. 01/01/26" required>
+                        
+                        <div style="display:flex; justify-content:flex-end; gap:10px;">
+                            <button type="button" class="modal-btn modal-btn-cancel" onclick="closeContestEditModal()">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-submit">Save Changes</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 

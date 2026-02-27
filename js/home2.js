@@ -209,9 +209,13 @@ async function setupRoleBasedVisibility() {
             if (currentUserRole === 'artist') {
                 // Show artist-specific features
                 showArtistFeatures();
+                // Load contest settings
+                loadContestSettings();
             } else if (currentUserRole === 'admin') {
                 // Show admin features
                 showAdminFeatures();
+                // Load contest settings
+                loadContestSettings();
             } else {
                 // Guest or other role - hide contest features
                 hideGuestFeatures();
@@ -219,6 +223,8 @@ async function setupRoleBasedVisibility() {
         } else {
             hideGuestFeatures();
         }
+        // Always load settings regardless of role (guests need to see it too)
+        loadContestSettings();
     } catch (error) {
         console.error('Error setting up role-based visibility:', error);
         hideGuestFeatures();
@@ -281,6 +287,10 @@ function showArtistFeatures() {
 function showAdminFeatures() {
     // Show all features for admin
     showArtistFeatures();
+    
+    // Show edit contest button
+    const editBtn = document.getElementById('editContestBtn');
+    if (editBtn) editBtn.style.display = 'inline-block';
 }
 
 // ============================================
@@ -658,6 +668,84 @@ if (artContestForm) {
         }
     });
 }
+
+// ============================================
+// CONTEST SETTINGS MANAGEMENT
+// ============================================
+
+async function loadContestSettings() {
+    try {
+        const result = await getWebsiteSettings();
+        if (result.success) {
+            const { title, deadline } = result.data;
+            if (title) {
+                // Update all instances of contestTitle (handling duplicate IDs in HTML)
+                document.querySelectorAll('#contestTitle').forEach(el => el.textContent = title);
+            }
+            if (deadline) {
+                const deadlineEl = document.getElementById('deadlineDate');
+                if (deadlineEl) deadlineEl.textContent = deadline;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading contest settings:', error);
+    }
+}
+
+function openContestEditModal() {
+    // Get current values
+    const titleEl = document.getElementById('contestTitle');
+    const deadlineEl = document.getElementById('deadlineDate');
+    
+    if (titleEl) document.getElementById('editContestTitle').value = titleEl.textContent;
+    if (deadlineEl) document.getElementById('editContestDeadline').value = deadlineEl.textContent;
+    
+    document.getElementById('contestEditModal').style.display = 'flex';
+}
+
+function closeContestEditModal() {
+    document.getElementById('contestEditModal').style.display = 'none';
+}
+
+const contestEditForm = document.getElementById('contestEditForm');
+if (contestEditForm) {
+    contestEditForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const newTitle = document.getElementById('editContestTitle').value;
+        const newDeadline = document.getElementById('editContestDeadline').value;
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        
+        submitBtn.textContent = 'Saving...';
+        submitBtn.disabled = true;
+        
+        try {
+            const result = await updateWebsiteSettings({
+                title: newTitle,
+                deadline: newDeadline
+            });
+            
+            if (result.success) {
+                showSuccess('Contest details updated successfully!');
+                // Reload settings to update UI
+                loadContestSettings();
+                closeContestEditModal();
+            } else {
+                showError('Failed to update settings: ' + result.error);
+            }
+        } catch (error) {
+            console.error(error);
+            showError('An error occurred.');
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+window.openContestEditModal = openContestEditModal;
+window.closeContestEditModal = closeContestEditModal;
 
 // ============================================
 // INITIALIZE ROLE-BASED VISIBILITY
