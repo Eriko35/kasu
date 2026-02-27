@@ -136,6 +136,10 @@ function navIndex(index) {
             document.getElementById('artContestSubmit').style.display = 'block';
             document.getElementById('nav6').classList.add("active");
             break;
+        case 7:
+            // Navigate to Museum Manager
+            window.location.href = 'museum-manager.html';
+            break;
         case 99:
             document.getElementById('fullAucBox').style.display = 'block';
             document.getElementById('nav4').classList.add("active");
@@ -147,6 +151,11 @@ function navIndex(index) {
             document.getElementById('home').style.display = 'block';
             document.getElementById('nav1').classList.add("active");
     }
+}
+
+// Navigate to Museum Manager
+function navToMuseumManager() {
+    window.location.href = 'museum-manager.html';
 }
 
 // ============================================
@@ -245,6 +254,12 @@ function hideGuestFeatures() {
     if (adminNav) {
         adminNav.style.display = 'none';
     }
+    
+    // Hide Museum Manager navigation
+    const museumNav = document.getElementById('nav7');
+    if (museumNav) {
+        museumNav.style.display = 'none';
+    }
 }
 
 function showArtistFeatures() {
@@ -270,6 +285,12 @@ function showArtistFeatures() {
     const adminNav = document.getElementById('nav5');
     if (adminNav) {
         adminNav.style.display = 'block';
+    }
+    
+    // Show Museum Manager for artists
+    const museumNav = document.getElementById('nav7');
+    if (museumNav) {
+        museumNav.style.display = 'block';
     }
 }
 
