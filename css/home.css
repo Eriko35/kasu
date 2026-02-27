@@ -852,4 +852,8 @@ footer {
     #smenu {
         width: 80px;
     }
+    .artwork {
+    max-height: 200px;
+    max-width: 200px;
+    }
 }
