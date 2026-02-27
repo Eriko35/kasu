@@ -842,3 +842,566 @@ footer {
         width: 100%;
     }
 }
+
+/* ============================================
+   ARTIST PAGE STYLES
+   ============================================ */
+
+/* Artist Header */
+#artistf {
+    width: 100%;
+    padding: 20px;
+}
+
+.artist-header {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 30px;
+    background: var(--base-light);
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.artist-profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--gold-accent);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.artist-profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.artist-info {
+    flex: 1;
+    text-align: left;
+}
+
+.artist-info h1 {
+    font-size: 36px;
+    margin: 0 0 5px 0;
+    color: var(--baselt);
+}
+
+.artist-username {
+    font-size: 18px;
+    color: var(--gold-accent);
+    margin: 0 0 15px 0;
+}
+
+.artist-bio {
+    font-size: 16px;
+    color: var(--baselt);
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.artist-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.artist-stats .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.artist-stats .stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--gold-accent);
+}
+
+.artist-stats .stat-label {
+    font-size: 14px;
+    color: var(--baselt);
+}
+
+/* Artist Tabs */
+.artist-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.artist-tabs .tab-btn {
+    padding: 12px 30px;
+    border: none;
+    background: var(--base-light);
+    color: var(--baselt);
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.artist-tabs .tab-btn:hover {
+    background: var(--active);
+    transform: translateY(-2px);
+}
+
+.artist-tabs .tab-btn.active {
+    background: var(--gold-accent);
+    color: white;
+    box-shadow: 0 4px 15px rgba(230, 163, 60, 0.4);
+}
+
+.artist-tabs .tab-icon {
+    font-size: 18px;
+}
+
+/* Tab Content */
+.artist-tab-content {
+    min-height: 400px;
+}
+
+.artist-tab-content .tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.artist-tab-content .tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gallery Filters */
+.gallery-filters {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.gallery-filters .filter-btn {
+    padding: 10px 25px;
+    border: 2px solid var(--gold-accent);
+    background: transparent;
+    color: var(--gold-accent);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gallery-filters .filter-btn:hover {
+    background: var(--gold-accent);
+    color: white;
+}
+
+.gallery-filters .filter-btn.active {
+    background: var(--gold-accent);
+    color: white;
+}
+
+/* Gallery Grid */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 20px;
+}
+
+.gallery-item {
+    background: var(--base-light);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-item-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.gallery-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-image img {
+    transform: scale(1.1);
+}
+
+.gallery-item-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-overlay {
+    opacity: 1;
+}
+
+.gallery-item-overlay .view-btn {
+    padding: 10px 25px;
+    background: var(--gold-accent);
+    color: white;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.gallery-item-info {
+    padding: 15px;
+    text-align: left;
+}
+
+.gallery-item-info h3 {
+    font-size: 18px;
+    margin: 0 0 10px 0;
+    color: var(--baselt);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 15px;
+    text-transform: uppercase;
+}
+
+.category-badge.local {
+    background: #4CAF50;
+    color: white;
+}
+
+.category-badge.national {
+    background: #2196F3;
+    color: white;
+}
+
+/* Empty Gallery */
+.empty-gallery {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--baselt);
+}
+
+.empty-gallery p {
+    font-size: 20px;
+    margin: 0;
+}
+
+.empty-gallery .empty-subtext {
+    font-size: 14px;
+    margin-top: 10px;
+    opacity: 0.7;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--baselt);
+    font-size: 16px;
+}
+
+/* About Section */
+.about-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.about-section h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: var(--text-color);
+}
+
+.about-card {
+    background: var(--base-light);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.about-row {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.about-row:last-child {
+    border-bottom: none;
+}
+
+.about-label {
+    width: 150px;
+    font-weight: 600;
+    color: var(--gold-accent);
+    flex-shrink: 0;
+}
+
+.about-value {
+    flex: 1;
+    color: var(--baselt);
+    text-align: left;
+}
+
+/* Exhibitions Section */
+.exhibitions-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.exhibitions-section h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: var(--text-color);
+}
+
+.exhibitions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.exhibition-card {
+    background: var(--base-light);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.exhibition-card:hover {
+    transform: translateY(-5px);
+}
+
+.exhibition-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.exhibition-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.exhibition-info {
+    padding: 20px;
+    text-align: left;
+}
+
+.exhibition-info h3 {
+    font-size: 20px;
+    margin: 0 0 10px 0;
+    color: var(--baselt);
+}
+
+.exhibition-info p {
+    font-size: 14px;
+    color: var(--baselt);
+    opacity: 0.8;
+    margin: 0;
+}
+
+/* Artist Modal */
+.artist-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.artist-modal-content {
+    background: var(--base-light);
+    border-radius: 20px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.artist-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 32px;
+    color: var(--baselt);
+    cursor: pointer;
+    transition: color 0.3s ease;
+    z-index: 10;
+}
+
+.artist-modal-close:hover {
+    color: var(--gold-accent);
+}
+
+.artist-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+.modal-image {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+}
+
+.modal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 20px 0 0 20px;
+}
+
+.modal-details {
+    padding: 40px 30px;
+    text-align: left;
+}
+
+.modal-details h2 {
+    font-size: 28px;
+    margin: 0 0 15px 0;
+    color: var(--baselt);
+}
+
+.modal-details .artwork-category {
+    display: inline-block;
+    padding: 5px 15px;
+    background: var(--gold-accent);
+    color: white;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.modal-details .artwork-description {
+    color: var(--baselt);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.modal-details .artwork-date {
+    font-size: 14px;
+    color: var(--baselt);
+    opacity: 0.7;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .artist-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .artist-info {
+        text-align: center;
+    }
+    
+    .artist-stats {
+        justify-content: center;
+    }
+    
+    .artist-tabs .tab-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .artist-modal-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-image {
+        min-height: 250px;
+    }
+    
+    .modal-image img {
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .about-row {
+        flex-direction: column;
+    }
+    
+    .about-label {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
