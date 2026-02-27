@@ -448,6 +448,19 @@ async function loadArtistProfile(userId) {
             document.getElementById('artistUsername').textContent = `@${profile.username}`;
             document.getElementById('artistBio').textContent = profile.bio || 'No bio available.';
             
+            // Update avatar if available
+            if (profile.avatarUrl) {
+                const avatarImg = document.getElementById('artistAvatar');
+                if (avatarImg) {
+                    avatarImg.src = profile.avatarUrl;
+                }
+                // Also update default profile image
+                const defaultAvatar = document.querySelector('#artistProfileImageDefault img');
+                if (defaultAvatar) {
+                    defaultAvatar.src = profile.avatarUrl;
+                }
+            }
+            
             // Update About tab info
             const aboutName = document.getElementById('aboutFullName');
             if(aboutName) aboutName.textContent = name;
@@ -473,6 +486,9 @@ async function loadArtistProfile(userId) {
                 document.getElementById('localExhibitionCount').textContent = `${artworks.filter(a => a.category === 'local').length} artworks`;
                 document.getElementById('nationalExhibitionCount').textContent = `${artworks.filter(a => a.category === 'national').length} artworks`;
             }
+            
+            // Show profile picture upload button for current user
+            await showProfilePictureUploadButton();
         }
     } catch (error) {
         console.error('Error loading profile:', error);
@@ -551,6 +567,8 @@ window.switchArtistTab = switchArtistTab;
 window.filterGallery = filterGallery;
 window.loadArtistProfile = loadArtistProfile;
 window.loadArtistGallery = loadArtistGallery;
+window.handleProfilePictureUpload = handleProfilePictureUpload;
+window.showProfilePictureUploadButton = showProfilePictureUploadButton;
 
 const input = document.getElementById("submContest");
 const preview = document.getElementById("uploadPreview");
@@ -682,4 +700,130 @@ if (typeof auth !== 'undefined') {
     setTimeout(async () => {
         await setupRoleBasedVisibility();
     }, 1000);
+}
+
+// ============================================
+// PROFILE PICTURE UPLOAD FUNCTIONS
+// ============================================
+
+/**
+ * Handle profile picture file selection
+ * @param {Event} event - File input change event
+ */
+async function handleProfilePictureUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file
+    const validation = validateProfilePicture(file);
+    if (!validation.isValid) {
+        showError(validation.error);
+        // Reset input
+        event.target.value = '';
+        return;
+    }
+    
+    // Get current user
+    const user = auth.currentUser;
+    if (!user) {
+        showError('You must be logged in to update your profile picture.');
+        return;
+    }
+    
+    const userId = user.uid;
+    
+    // Show loading state
+    const loadingEl = document.getElementById('profilePictureLoading');
+    const wrapper = document.getElementById('profilePictureWrapper');
+    if (loadingEl) loadingEl.style.display = 'flex';
+    
+    try {
+        // Get current avatar path for deletion later
+        const profile = await getUserProfile(userId);
+        const oldAvatarPath = profile.success && profile.profile.avatarUrl ? null : null; // We'll store path separately if needed
+        
+        // Upload and update profile picture using the integrated function
+        const result = await uploadAndUpdateProfilePicture(file, userId);
+        
+        if (result.success) {
+            // Update the displayed avatar
+            const avatarImg = document.getElementById('artistAvatar');
+            if (avatarImg) {
+                // Add timestamp to prevent caching
+                avatarImg.src = result.avatarUrl + '?t=' + Date.now();
+            }
+            
+            // Also update the default display if it exists
+            const defaultAvatar = document.querySelector('#artistProfileImageDefault img');
+            if (defaultAvatar) {
+                defaultAvatar.src = result.avatarUrl + '?t=' + Date.now();
+            }
+            
+            showSuccess('Profile picture updated successfully!');
+        } else {
+            showError('Failed to update profile picture: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Profile picture upload error:', error);
+        showError('An error occurred: ' + error.message);
+    } finally {
+        // Hide loading state
+        if (loadingEl) loadingEl.style.display = 'none';
+        // Reset input
+        event.target.value = '';
+    }
+}
+
+/**
+ * Show the profile picture upload button for the current user's profile
+ * Called when the artist profile is loaded
+ */
+async function showProfilePictureUploadButton() {
+    try {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        // Get the current profile being viewed
+        const profileWrapper = document.getElementById('profilePictureWrapper');
+        const defaultProfile = document.getElementById('artistProfileImageDefault');
+        
+        // Get the displayed user ID from the page
+        const artistAvatar = document.getElementById('artistAvatar');
+        
+        // Check if current user is viewing their own profile
+        // by comparing with the logged-in user
+        const profileResult = await getUserProfile(user.uid);
+        
+        if (profileResult.success) {
+            const profile = profileResult.profile;
+            
+            // If user is viewing their own profile, show upload button
+            // Also check if there's a displayed user ID to compare
+            if (profile && profile.uid === user.uid) {
+                if (profileWrapper) {
+                    profileWrapper.style.display = 'block';
+                }
+                if (defaultProfile) {
+                    defaultProfile.style.display = 'none';
+                }
+                
+                // If there's an existing avatar URL, display it
+                if (profile.avatarUrl) {
+                    if (artistAvatar) {
+                        artistAvatar.src = profile.avatarUrl;
+                    }
+                }
+            } else {
+                // Show default profile image for other users
+                if (profileWrapper) {
+                    profileWrapper.style.display = 'none';
+                }
+                if (defaultProfile) {
+                    defaultProfile.style.display = 'block';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error showing profile picture upload button:', error);
+    }
 }
