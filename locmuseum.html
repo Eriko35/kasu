@@ -152,6 +152,7 @@
             transform: perspective(1000px) rotateX(60deg);
         }
         .wall { 
+            min-width: 100vw;
             width: fit-content;
             height: 100vh;
             display: grid;
@@ -181,11 +182,131 @@
             text-decoration: none;
             padding: 50vh 5px;
         }
+        
+        /* Full Screen Modal Styles (Copied from National Museum) */
+        .fullArtBox {
+            z-index: 1000;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            display: flex;
+            top: 0;
+            left: 0;
+            background: rgba(0,0,0,0.8);
+        }
+        .fullArtContainer {
+            width: 90%;
+            height: 90%;
+            margin: 2.5% 5%;
+            display: flex;
+            align-items: center;
+            background-image: url('css/image/paper.webp');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            background-position: top left;
+            overflow: hidden;
+            position: relative;
+            border-radius: 8px;
+        }
+        .artDiv {
+            width: 40%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.05);
+        }
+        .artDiv img {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+        }
+        .artDesc {
+            width: 60%;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        .artTitleBox {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .fullArtTitle {
+            font-size: 32px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .artDescBox {
+            font-size: 18px;
+            margin-top: 5px;
+            color: #333;
+        }
+        .artMainDesc p {
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+        #backFullArt {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            background: rgba(255,255,255,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .fullArtContainer {
+                flex-direction: column; /* Stack image and description */
+                align-items: center; /* Center items horizontally */
+            }
+            .artDiv {
+                width: 100%; /* Image takes full width */
+                max-width: 100%;
+            }
+            .artDesc {
+                width: 100%; /* Description takes full width */
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="horizontal-scroll" id="scroller">
         <button id="addArtworkBtn" class="add-artwork-btn" onclick="openAddArtworkModal()">+ Add Artwork</button>
+        
+        <!-- Full Screen Modal -->
+        <div class="fullArtBox" id="fullArtModal" style="display: none;">
+            <div class="fullArtContainer">
+                <a id="backFullArt" onclick="closeFullArt()">X</a>
+                <div class="artDiv">
+                    <img id="fullArtImage" src="" alt="Artwork">
+                </div>
+                <div class="artDesc">
+                    <div class="artTitleBox">
+                        <div>
+                            <span>"<span class="fullArtTitle" id="fullArtTitle">Title</span>"</span> 
+                            <div class="artDescBox"><span id="fullArtArtist">Artist</span>, <span id="fullArtDate">Year</span> </div> 
+                            <div class="artDescBox"> <span id="fullArtMedium">Art Piece</span></div>
+                            <div class="artDescBox"> Local Museum Collection</div>
+                        </div>
+                    </div>
+                    <div class="artMainDesc">
+                        <p id="fullArtDesc">Description...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="wall" id="artGallery">
             <a class="bckbtn" href="home2.html">BACK</a>
             <!-- Artworks will be loaded dynamically here -->
@@ -282,6 +403,7 @@
         // User role tracking
         let currentUserRole = null;
         let currentUserId = null;
+        let loadedArtworks = []; // Store loaded artworks
         
         document.addEventListener('DOMContentLoaded', async function() {
             // Wait for Firebase to initialize
@@ -344,6 +466,7 @@
                 }
                 
                 const localArtworks = result.artworks || [];
+                loadedArtworks = localArtworks; // Store for access
                 
                 console.log('Local artworks found:', localArtworks.length);
                 
@@ -368,7 +491,7 @@
                 }
                 
                 // Create artwork elements for each local artwork
-                localArtworks.forEach(function(artwork) {
+                localArtworks.forEach(function(artwork, index) {
                     const artDiv = document.createElement('div');
                     artDiv.className = 'art';
                     
@@ -384,7 +507,7 @@
                     }
                     
                     artDiv.innerHTML = `
-                        <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 280px; object-fit: cover;">
+                        <img src="${artwork.imageUrl}" alt="${artwork.title}" onclick="openFullArt(${index})" style="width: 100%; height: 280px; object-fit: cover; cursor: pointer;">
                         <p style="margin: 10px 0 5px 0; font-weight: bold;">${artwork.title || 'Untitled'}</p>
                         <p style="margin: 0; font-size: 12px; color: #666;">${artwork.description || ''}</p>
                         ${buttonsHtml}
@@ -399,6 +522,46 @@
             }
         }
         
+        // ============================================
+        // FULL SCREEN VIEW FUNCTIONS
+        // ============================================
+        
+        async function openFullArt(index) {
+            const artwork = loadedArtworks[index];
+            if (!artwork) return;
+            
+            const modal = document.getElementById('fullArtModal');
+            document.getElementById('fullArtImage').src = artwork.imageUrl;
+            document.getElementById('fullArtTitle').textContent = artwork.title || 'Untitled';
+            document.getElementById('fullArtDate').textContent = new Date(artwork.createdAt).getFullYear();
+            document.getElementById('fullArtDesc').textContent = artwork.description || 'No description available.';
+            
+            // Reset artist info while loading
+            document.getElementById('fullArtArtist').textContent = 'Loading...';
+            
+            modal.style.display = 'flex';
+            
+            // Fetch artist details
+            if (artwork.artistId) {
+                try {
+                    const profile = await getUserProfile(artwork.artistId);
+                    if (profile.success) {
+                        const p = profile.profile;
+                        document.getElementById('fullArtArtist').textContent = `${p.firstName} ${p.lastName}`;
+                    } else {
+                        document.getElementById('fullArtArtist').textContent = 'Unknown Artist';
+                    }
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('fullArtArtist').textContent = 'Unknown Artist';
+                }
+            }
+        }
+        
+        function closeFullArt() {
+            document.getElementById('fullArtModal').style.display = 'none';
+        }
+
         // ============================================
         // CRUD OPERATIONS FOR ARTISTS
         // ============================================

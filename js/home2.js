@@ -60,10 +60,10 @@ function showMenu() {
     const menuIcon = document.getElementById('menuIcon');
     if (menuVisible) {
         document.getElementById("sideBar").style.display = "flex";
-        if (menuIcon) menuIcon.src = "css/icons/menuoff.webp";
+        if (menuIcon) menuIcon.src = "css/icons/menuon.webp";
     } else {
         document.getElementById("sideBar").style.display = "none";
-        if (menuIcon) menuIcon.src = "css/icons/menuon.webp";
+        if (menuIcon) menuIcon.src = "css/icons/menuoff.webp";
     }
 }
 function removeTheme() {
@@ -126,8 +126,11 @@ function navIndex(index) {
         case 4:
             document.getElementById('artistf').style.display = 'block';
             document.getElementById('nav4').classList.add("active");
-            // Load artist page data when navigating to artist tab
-            loadArtistPage();
+            const artistId = localStorage.getItem('loggedInUserId');
+            if (artistId) {
+                loadArtistProfile(artistId);
+                loadArtistGallery(artistId);
+            }
             break;
         case 5:
             document.getElementById('adminPanel').style.display = 'block';
@@ -191,7 +194,7 @@ if(!localStorage.getItem('loggedInUserId')) {
 async function setupRoleBasedVisibility() {
     const userId = localStorage.getItem('loggedInUserId');
     if (!userId) {
-        // Guest user - hide contest features completely
+        // Guest user - hide contest features
         hideGuestFeatures();
         return;
     }
@@ -209,11 +212,8 @@ async function setupRoleBasedVisibility() {
             } else if (currentUserRole === 'admin') {
                 // Show admin features
                 showAdminFeatures();
-            } else if (currentUserRole === 'guest') {
-                // Guest role - hide contest features completely
-                hideGuestFeatures();
             } else {
-                // Unknown role - hide contest features
+                // Guest or other role - hide contest features
                 hideGuestFeatures();
             }
         } else {
@@ -232,16 +232,11 @@ function hideGuestFeatures() {
         joinContestBtn.style.display = 'none';
     }
     
-    // Hide the entire contest section on home page
-    const contestSection = document.querySelector('.home-section');
-    if (contestSection) {
-        contestSection.style.display = 'none';
-    }
-    
     // Hide Artist navigation
     const artistNav = document.getElementById('nav4');
     if (artistNav) {
         artistNav.style.display = 'none';
+        joinContestBtn.style.display = 'block'
     }
     
     // Hide Contest navigation
@@ -255,25 +250,13 @@ function hideGuestFeatures() {
     if (adminNav) {
         adminNav.style.display = 'none';
     }
-    
-    // Also hide the contest section div directly if it exists
-    const contestf = document.getElementById('constestf');
-    if (contestf) {
-        contestf.style.display = 'none';
-    }
 }
 
 function showArtistFeatures() {
-    // Show Join Contest button for authenticated users (artist role)
+    // Show Join Contest button for authenticated users
     const joinContestBtn = document.getElementById('joinContest');
     if (joinContestBtn) {
         joinContestBtn.style.display = 'block';
-    }
-    
-    // Show the entire contest section on home page for artists
-    const contestSection = document.querySelector('.home-section');
-    if (contestSection) {
-        contestSection.style.display = 'block';
     }
     
     // Show Artist navigation
@@ -331,10 +314,15 @@ async function loadAdminPanel() {
                     artworksList.innerHTML = artworks.map(artwork => `
                         <div class="artwork-item">
                             <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100px; height: 100px; object-fit: cover;">
-                            <div>
+                            <div class="artwork-details">
                                 <h4>${artwork.title}</h4>
                                 <p>Category: ${artwork.category || 'Not specified'}</p>
                                 <p>Created: ${new Date(artwork.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <div class="artwork-actions">
+                                <button class="delete-btn" onclick="deleteArtworkFromAdmin(this, '${artwork.id}')" title="Delete Artwork">
+                                    🗑️ Delete
+                                </button>
                             </div>
                         </div>
                     `).join('');
@@ -345,6 +333,224 @@ async function loadAdminPanel() {
         console.error('Error loading admin panel:', error);
     }
 }
+
+/**
+ * Delete artwork from admin panel
+ * @param {HTMLButtonElement} button - The button element that was clicked
+ * @param {string} artworkId - The artwork ID to delete
+ */
+async function deleteArtworkFromAdmin(button, artworkId) {
+    // Confirm deletion
+    const confirmDelete = confirm('Are you sure you want to delete this artwork? This action cannot be undone.');
+    
+    if (!confirmDelete) {
+        return;
+    }
+
+    // Disable button and show loading state
+    const originalButtonText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = 'Deleting...';
+    
+    const userId = localStorage.getItem('loggedInUserId');
+    if (!userId) {
+        showError('You must be logged in to delete artwork.');
+        button.disabled = false;
+        button.innerHTML = originalButtonText;
+        return;
+    }
+    
+    try {
+        const result = await deleteArtwork(artworkId, userId);
+        
+        if (result.success) {
+            showSuccess('Artwork deleted successfully!');
+            // Refresh the admin panel to update the list.
+            // The button will be removed from the DOM during the refresh.
+            loadAdminPanel();
+        } else {
+            showError('Failed to delete artwork: ' + result.error);
+            button.disabled = false;
+            button.innerHTML = originalButtonText;
+        }
+    } catch (error) {
+        console.error('Delete artwork error:', error);
+        showError('An error occurred while deleting the artwork.');
+        button.disabled = false;
+        button.innerHTML = originalButtonText;
+    }
+}
+
+// Make function globally available
+window.deleteArtworkFromAdmin = deleteArtworkFromAdmin;
+
+// ============================================
+// ARTWORK MODAL FUNCTIONS (FULL SCREEN VIEW)
+// ============================================
+
+/**
+ * Open artwork in full screen modal
+ * @param {string} title - Artwork title
+ * @param {string} description - Artwork description
+ * @param {string} date - Creation date
+ * @param {string} imageUrl - URL of the image
+ * @param {string} category - Museum category
+ */
+function viewArtworkFull(title, description, date, imageUrl, category) {
+    const modal = document.getElementById('artistArtworkModal');
+    if (!modal) return;
+    
+    const img = document.getElementById('modalArtworkImage');
+    const titleEl = document.getElementById('modalArtworkTitle');
+    const descEl = document.getElementById('modalArtworkDescription');
+    const dateEl = document.getElementById('modalArtworkDate');
+    const catEl = document.getElementById('modalArtworkCategory');
+    
+    if (img) img.src = imageUrl;
+    if (titleEl) titleEl.textContent = title || 'Untitled';
+    if (descEl) descEl.textContent = description || 'No description available.';
+    if (dateEl) dateEl.textContent = 'Created: ' + (date ? date : 'Unknown');
+    if (catEl) catEl.textContent = category || 'General Collection';
+    
+    modal.style.display = 'flex';
+}
+
+function closeArtistModal() {
+    const modal = document.getElementById('artistArtworkModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Close modal when clicking outside the content
+window.onclick = function(event) {
+    const modal = document.getElementById('artistArtworkModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+// Make functions globally available
+window.viewArtworkFull = viewArtworkFull;
+window.closeArtistModal = closeArtistModal;
+
+// ============================================
+// ARTIST PROFILE & GALLERY FUNCTIONS
+// ============================================
+
+async function loadArtistProfile(userId) {
+    try {
+        const result = await getUserProfile(userId);
+        if (result.success) {
+            const profile = result.profile;
+            
+            // Update header info
+            const name = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'Artist';
+            document.getElementById('artistName').textContent = name;
+            document.getElementById('artistUsername').textContent = `@${profile.username}`;
+            document.getElementById('artistBio').textContent = profile.bio || 'No bio available.';
+            
+            // Update About tab info
+            const aboutName = document.getElementById('aboutFullName');
+            if(aboutName) aboutName.textContent = name;
+            
+            const aboutUser = document.getElementById('aboutUsername');
+            if(aboutUser) aboutUser.textContent = `@${profile.username}`;
+            
+            const aboutCat = document.getElementById('aboutCategory');
+            if(aboutCat) aboutCat.textContent = profile.category || 'Artist';
+            
+            const aboutBio = document.getElementById('aboutBio');
+            if(aboutBio) aboutBio.textContent = profile.bio || 'No bio available.';
+            
+            // Load stats
+            const artworksResult = await getArtworksByArtist(userId);
+            if (artworksResult.success) {
+                const artworks = artworksResult.artworks;
+                document.getElementById('totalArtworksCount').textContent = artworks.length;
+                document.getElementById('localArtworksCount').textContent = artworks.filter(a => a.category === 'local').length;
+                document.getElementById('nationalArtworksCount').textContent = artworks.filter(a => a.category === 'national').length;
+                
+                // Also update exhibition counts
+                document.getElementById('localExhibitionCount').textContent = `${artworks.filter(a => a.category === 'local').length} artworks`;
+                document.getElementById('nationalExhibitionCount').textContent = `${artworks.filter(a => a.category === 'national').length} artworks`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
+
+async function loadArtistGallery(userId, filter = 'all') {
+    const grid = document.getElementById('artistGalleryGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '<div class="loading-spinner">Loading artworks...</div>';
+    
+    try {
+        const result = await getArtworksByArtist(userId);
+        
+        if (result.success) {
+            let artworks = result.artworks;
+            
+            if (filter !== 'all') {
+                artworks = artworks.filter(a => a.category === filter);
+            }
+            
+            if (artworks.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">No artworks found in this category.</p>';
+                return;
+            }
+            
+            grid.innerHTML = artworks.map(artwork => {
+                // Escape strings for onclick to prevent syntax errors
+                const title = (artwork.title || '').replace(/'/g, "\\'");
+                const desc = (artwork.description || '').replace(/'/g, "\\'").replace(/\n/g, ' ');
+                const date = new Date(artwork.createdAt).toLocaleDateString();
+                const category = (artwork.category || 'General').replace(/'/g, "\\'");
+                
+                return `
+                    <div class="gallery-item" onclick="viewArtworkFull('${title}', '${desc}', '${date}', '${artwork.imageUrl}', '${category}')" style="cursor: pointer; position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1; background: #333;">
+                        <img src="${artwork.imageUrl}" alt="${artwork.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error loading gallery:', error);
+        grid.innerHTML = '<p>Error loading gallery.</p>';
+    }
+}
+
+function switchArtistTab(tabName) {
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    
+    // Update panels
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        if (panel.id === `tab-${tabName}`) panel.classList.add('active');
+        else panel.classList.remove('active');
+    });
+}
+
+function filterGallery(filter) {
+    // Update buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.dataset.filter === filter) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    
+    const userId = localStorage.getItem('loggedInUserId');
+    if (userId) {
+        loadArtistGallery(userId, filter);
+    }
+}
+
+window.switchArtistTab = switchArtistTab;
+window.filterGallery = filterGallery;
+window.loadArtistProfile = loadArtistProfile;
+window.loadArtistGallery = loadArtistGallery;
 
 const input = document.getElementById("submContest");
 const preview = document.getElementById("uploadPreview");
@@ -462,15 +668,6 @@ if (artContestForm) {
 // ============================================
 // INITIALIZE ROLE-BASED VISIBILITY
 // ============================================
-// Hide contest by default on page load for guests
-(function() {
-    // Initially hide contest section for guests (until authentication is checked)
-    const contestSection = document.querySelector('.home-section');
-    if (contestSection) {
-        contestSection.style.display = 'none';
-    }
-})();
-
 // Run after Firebase is initialized
 if (typeof auth !== 'undefined') {
     auth.onAuthStateChanged(async (user) => {
@@ -486,284 +683,3 @@ if (typeof auth !== 'undefined') {
         await setupRoleBasedVisibility();
     }, 1000);
 }
-
-// ============================================
-// ARTIST PAGE FUNCTIONS
-// ============================================
-
-// Current artist data
-let currentArtistData = null;
-let artistArtworks = [];
-let currentFilter = 'all';
-
-/**
- * Switch between artist page tabs
- * @param {string} tabName - The tab name to switch to
- */
-function switchArtistTab(tabName) {
-    // Update tab buttons
-    document.querySelectorAll('.artist-tabs .tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.tab === tabName) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Update tab panels
-    document.querySelectorAll('.artist-tab-content .tab-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
-    document.getElementById('tab-' + tabName).classList.add('active');
-    
-    // Load tab content if needed
-    if (tabName === 'gallery') {
-        renderArtistGallery();
-    }
-}
-
-/**
- * Filter gallery by category
- * @param {string} filter - Filter category ('all', 'local', 'national')
- */
-function filterGallery(filter) {
-    currentFilter = filter;
-    
-    // Update filter buttons
-    document.querySelectorAll('.gallery-filters .filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.filter === filter) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Re-render gallery with filter
-    renderArtistGallery();
-}
-
-/**
- * Load artist profile and artworks
- * @param {string} artistId - The artist's user ID (optional, defaults to current user)
- */
-async function loadArtistPage(artistId = null) {
-    const userId = artistId || localStorage.getItem('loggedInUserId');
-    
-    if (!userId) {
-        showError('Please log in to view artist profile');
-        return;
-    }
-    
-    try {
-        // Get artist profile
-        const profileResult = await getUserProfile(userId);
-        
-        if (profileResult.success) {
-            currentArtistData = profileResult.profile;
-            updateArtistHeader(currentArtistData);
-            updateArtistAbout(currentArtistData);
-        } else {
-            // Use default data if profile not found
-            currentArtistData = {
-                firstName: 'Artist',
-                lastName: 'Name',
-                username: 'artist',
-                bio: 'No bio available',
-                role: 'artist',
-                createdAt: new Date().toISOString()
-            };
-            updateArtistHeader(currentArtistData);
-            updateArtistAbout(currentArtistData);
-        }
-        
-        // Get artist artworks
-        const artworksResult = await getArtworksByArtist(userId);
-        
-        if (artworksResult.success) {
-            artistArtworks = artworksResult.artworks;
-            updateArtistStats(artistArtworks);
-            renderArtistGallery();
-            updateExhibitions(artistArtworks);
-        } else {
-            artistArtworks = [];
-            updateArtistStats([]);
-            renderArtistGallery();
-        }
-        
-    } catch (error) {
-        console.error('Error loading artist page:', error);
-        showError('Failed to load artist profile');
-    }
-}
-
-/**
- * Update artist header with profile data
- * @param {Object} profile - Artist profile data
- */
-function updateArtistHeader(profile) {
-    // Update name
-    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
-    document.getElementById('artistName').textContent = fullName || 'Artist Name';
-    
-    // Update username
-    document.getElementById('artistUsername').textContent = '@' + (profile.username || 'artist');
-    
-    // Update bio
-    document.getElementById('artistBio').textContent = profile.bio || 'No bio available';
-    
-    // Update avatar
-    if (profile.avatarUrl) {
-        document.getElementById('artistAvatar').src = profile.avatarUrl;
-    }
-}
-
-/**
- * Update artist about section
- * @param {Object} profile - Artist profile data
- */
-function updateArtistAbout(profile) {
-    // Full name
-    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
-    document.getElementById('aboutFullName').textContent = fullName || 'Not specified';
-    
-    // Username
-    document.getElementById('aboutUsername').textContent = '@' + (profile.username || 'artist');
-    
-    // Member since
-    if (profile.createdAt) {
-        const memberDate = new Date(profile.createdAt);
-        document.getElementById('aboutMemberSince').textContent = memberDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long'
-        });
-    } else {
-        document.getElementById('aboutMemberSince').textContent = 'Unknown';
-    }
-    
-    // Category
-    document.getElementById('aboutCategory').textContent = profile.category || 'Artist';
-    
-    // Bio
-    document.getElementById('aboutBio').textContent = profile.bio || 'No bio available';
-}
-
-/**
- * Update artist statistics
- * @param {Array} artworks - Array of artwork objects
- */
-function updateArtistStats(artworks) {
-    const total = artworks.length;
-    const local = artworks.filter(a => a.category === 'local').length;
-    const national = artworks.filter(a => a.category === 'national').length;
-    
-    document.getElementById('totalArtworksCount').textContent = total;
-    document.getElementById('localArtworksCount').textContent = local;
-    document.getElementById('nationalArtworksCount').textContent = national;
-}
-
-/**
- * Update exhibitions section
- * @param {Array} artworks - Array of artwork objects
- */
-function updateExhibitions(artworks) {
-    const local = artworks.filter(a => a.category === 'local').length;
-    const national = artworks.filter(a => a.category === 'national').length;
-    
-    document.getElementById('localExhibitionCount').textContent = local + ' artwork' + (local !== 1 ? 's' : '');
-    document.getElementById('nationalExhibitionCount').textContent = national + ' artwork' + (national !== 1 ? 's' : '');
-}
-
-/**
- * Render artist gallery with filter
- */
-function renderArtistGallery() {
-    const galleryGrid = document.getElementById('artistGalleryGrid');
-    
-    if (!galleryGrid) return;
-    
-    // Filter artworks
-    let filteredArtworks = artistArtworks;
-    if (currentFilter !== 'all') {
-        filteredArtworks = artistArtworks.filter(a => a.category === currentFilter);
-    }
-    
-    // Check if empty
-    if (filteredArtworks.length === 0) {
-        galleryGrid.innerHTML = `
-            <div class="empty-gallery">
-                <p>No artworks found</p>
-                <p class="empty-subtext">Upload your first artwork to get started!</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Render artworks
-    galleryGrid.innerHTML = filteredArtworks.map(artwork => `
-        <div class="gallery-item" onclick="openArtistArtworkModal('${artwork.id}')">
-            <div class="gallery-item-image">
-                <img src="${artwork.imageUrl}" alt="${artwork.title}" loading="lazy">
-                <div class="gallery-item-overlay">
-                    <span class="view-btn">View Details</span>
-                </div>
-            </div>
-            <div class="gallery-item-info">
-                <h3>${artwork.title}</h3>
-                <span class="category-badge ${artwork.category}">${artwork.category === 'local' ? 'Local Museum' : 'National Museum'}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-/**
- * Open artwork detail modal
- * @param {string} artworkId - The artwork ID
- */
-function openArtistArtworkModal(artworkId) {
-    const artwork = artistArtworks.find(a => a.id === artworkId);
-    
-    if (!artwork) {
-        showError('Artwork not found');
-        return;
-    }
-    
-    // Update modal content
-    document.getElementById('modalArtworkImage').src = artwork.imageUrl;
-    document.getElementById('modalArtworkTitle').textContent = artwork.title;
-    document.getElementById('modalArtworkCategory').textContent = artwork.category === 'local' ? 'Local Museum' : 'National Museum';
-    document.getElementById('modalArtworkDescription').textContent = artwork.description || 'No description available';
-    
-    if (artwork.createdAt) {
-        const createdDate = new Date(artwork.createdAt);
-        document.getElementById('modalArtworkDate').textContent = 'Created: ' + createdDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    } else {
-        document.getElementById('modalArtworkDate').textContent = 'Created: Unknown';
-    }
-    
-    // Show modal
-    document.getElementById('artistArtworkModal').style.display = 'flex';
-}
-
-/**
- * Close artist artwork modal
- */
-function closeArtistModal() {
-    document.getElementById('artistArtworkModal').style.display = 'none';
-}
-
-// Close modal when clicking outside
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('artistArtworkModal');
-    if (e.target === modal) {
-        closeArtistModal();
-    }
-});
-
-// Make functions globally available
-window.switchArtistTab = switchArtistTab;
-window.filterGallery = filterGallery;
-window.loadArtistPage = loadArtistPage;
-window.openArtistArtworkModal = openArtistArtworkModal;
-window.closeArtistModal = closeArtistModal;

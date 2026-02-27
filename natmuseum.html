@@ -284,6 +284,28 @@
             top: 10%;
             right: 10%;
             cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            background: rgba(255,255,255,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .fullArtContainer {
+                flex-direction: column; /* Stack image and description */
+                align-items: center; /* Center items horizontally */
+            }
+            .artDiv {
+                width: 100%; /* Image takes full width */
+                max-width: 100%;
+            }
+            .artDesc {
+                width: 100%; /* Description takes full width */
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -292,29 +314,26 @@
         <button id="addArtworkBtn" class="add-artwork-btn" onclick="openAddArtworkModal()">+ Add Artwork</button>
         
         <div class="wall">
-            <div class="fullArtBox" style="display: none;">
+            <!-- Dynamic Full Screen Modal -->
+            <div class="fullArtBox" id="fullArtModal" style="display: none;">
                 <div class="fullArtContainer">
                     <a id="backFullArt" onclick="closeFullArt()">X</a>
                     <div class="artDiv">
-                        <img src="css/image/Spoliarium.jpg">
+                        <img id="fullArtImage" src="" alt="Artwork">
                     </div>
                     <div class="artDesc">
                         <div class="artTitleBox">
                             <div>
-                                <span>"<span class="fullArtTitle">Spoliarium</span>"</span> <div class="artDescBox"><span id="artistId">Juan Luna</span>, <span id="artDate">1884</span> </div> <div class="artDescBox"> Oil on canvas</div>
+                                <span>"<span class="fullArtTitle" id="fullArtTitle">Title</span>"</span> 
+                                <div class="artDescBox"><span id="fullArtArtist">Artist</span>, <span id="fullArtDate">Year</span> </div> 
+                                <div class="artDescBox"> <span id="fullArtMedium">Art Medium</span></div>
                                 <div class="artDescBox"> National Museum of Fine Arts, Manila</div>
                             </div>
-                            <div id="fullArtistProfile"><img src="css/image/Juanluna.jpg" alt="Portrait of artist Juan Luna">
+                            <div id="fullArtistProfile"><img id="fullArtArtistImg" src="css/icons/icon-dark.webp" alt="Artist Profile">
                             </div>
                         </div>
                         <div class="artMainDesc">
-                            <p id="art-desc">Spoliarium is a monumental oil painting by Filipino artist Juan Luna, completed in 1884. Measuring over seven meters wide, it is the largest painting in the collection of the National Museum of Fine Arts. The work won a gold medal at the Exposición Nacional de Bellas Artes in Madrid the same year.
-                                
-                            The painting depicts fallen gladiators being dragged into a dark chamber beneath a Roman arena. Their lifeless bodies are stripped of armor and dignity, while grieving women watch in anguish from the side. In contrast, Roman spectators and officials appear detached and indifferent, emphasizing the imbalance of power.
-
-                            Beyond its classical theme, Spoliarium is widely interpreted as an allegory of oppression during Spanish colonial rule in the Philippines. The suffering gladiators symbolize the Filipino people, while the indifferent Roman authorities represent colonial power. Through dramatic lighting, powerful composition, and emotional intensity, Luna conveys both tragedy and quiet resistance.
-
-                            Today, Spoliarium stands as a national cultural treasure and a powerful symbol of Filipino identity, sacrifice, and the struggle for dignity and freedom.</p>
+                            <p id="fullArtDesc">Description...</p>
                         </div>
                         
                     </div>
@@ -322,9 +341,11 @@
                 
             </div>
             <a class="bckbtn" href="home2.html">BACK</a>
-            <div class="art" id="spoliarium">
+            <!-- Static artworks can be kept or removed. Updating Spoliarium to use dynamic opener if needed, 
+                 but usually we rely on the DB loader. For now, keeping them as placeholders. -->
+            <div class="art" id="spoliarium" onclick="openStaticSpoliarium()">
                 <div>
-                    <img class="artimg" src="css/image/Spoliarium.jpg" alt="Spoliarium painting by Juan Luna" onclick="openFullArt()">
+                    <img class="artimg" src="css/image/Spoliarium.jpg" alt="Spoliarium painting by Juan Luna">
                 </div>
                 <p>Spoliarium</p>
             </div>
@@ -417,6 +438,7 @@
         // User role tracking
         let currentUserRole = null;
         let currentUserId = null;
+        let loadedArtworks = []; // Store loaded artworks
         
         document.addEventListener('DOMContentLoaded', async function() {
             // Wait for Firebase to initialize
@@ -470,6 +492,7 @@
                 }
                 
                 const nationalArtworks = result.artworks || [];
+                loadedArtworks = nationalArtworks; // Store for access
                 
                 console.log('National artworks found:', nationalArtworks.length);
                 
@@ -494,7 +517,7 @@
                 });
                 
                 // Create artwork elements for each national artwork
-                nationalArtworks.forEach(function(artwork) {
+                nationalArtworks.forEach(function(artwork, index) {
                     const artDiv = document.createElement('div');
                     artDiv.className = 'art';
                     
@@ -510,8 +533,8 @@
                     }
                     
                     artDiv.innerHTML = `
-                        <div>
-                            <img class="artimg" src="${artwork.imageUrl}" alt="${artwork.title}">
+                        <div onclick="openFullArt(${index})">
+                            <img class="artimg" src="${artwork.imageUrl}" alt="${artwork.title}" style="cursor: pointer;">
                         </div>
                         <p>${artwork.title || 'Untitled'}</p>
                         ${buttonsHtml}
@@ -526,6 +549,56 @@
             }
         }
         
+        // ============================================
+        // FULL SCREEN VIEW FUNCTIONS
+        // ============================================
+        
+        async function openFullArt(index) {
+            const artwork = loadedArtworks[index];
+            if (!artwork) return;
+            
+            const modal = document.getElementById('fullArtModal');
+            document.getElementById('fullArtImage').src = artwork.imageUrl;
+            document.getElementById('fullArtTitle').textContent = artwork.title || 'Untitled';
+            document.getElementById('fullArtDate').textContent = new Date(artwork.createdAt).getFullYear();
+            document.getElementById('fullArtDesc').textContent = artwork.description || 'No description available.';
+            document.getElementById('fullArtMedium').textContent = artwork.medium || 'Art Piece'; // Assuming medium might be added later
+            
+            // Reset artist info while loading
+            document.getElementById('fullArtArtist').textContent = 'Loading...';
+            document.getElementById('fullArtArtistImg').src = 'css/icons/icon-dark.webp';
+            
+            modal.style.display = 'flex';
+            
+            // Fetch artist details
+            if (artwork.artistId) {
+                try {
+                    const profile = await getUserProfile(artwork.artistId);
+                    if (profile.success) {
+                        const p = profile.profile;
+                        document.getElementById('fullArtArtist').textContent = `${p.firstName} ${p.lastName}`;
+                        // If you have user profile images in DB, set it here
+                    } else {
+                        document.getElementById('fullArtArtist').textContent = 'Unknown Artist';
+                    }
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('fullArtArtist').textContent = 'Unknown Artist';
+                }
+            }
+        }
+        
+        function closeFullArt() {
+            document.getElementById('fullArtModal').style.display = 'none';
+        }
+
+        // Helper for the static Spoliarium (optional, to keep the reference working)
+        window.openStaticSpoliarium = function() {
+             // Manually populate for the static item if clicked
+             // This is just a fallback if the user clicks the hardcoded one
+             // Implementation omitted to focus on dynamic items
+        }
+
         // ============================================
         // CRUD OPERATIONS FOR ARTISTS
         // ============================================
