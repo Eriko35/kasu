@@ -304,8 +304,6 @@ body {
 }
 .artwork {
     background: #EDE1E1;
-    max-height: 250px;
-    max-width: 250px;
     width: 100%;
     height: auto;
     box-shadow: 0 0px 8px rgba(0, 0, 0, 0.35);
@@ -807,8 +805,8 @@ footer {
         width: 80px;
     }
     .artwork {
-    max-height: 200px;
-    max-width: 200px;
+    width: 100%;
+    height: auto;
     }
     .aboutsection {
         flex-direction: column;
