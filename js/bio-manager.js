@@ -38,6 +38,38 @@ const MAX_VERSION_HISTORY = 10; // Keep last 10 versions
  */
 
 // ============================================
+// AUTHENTICATION HELPERS
+// ============================================
+
+/**
+ * Get the current authenticated user ID
+ * @returns {string|null} - User ID or null
+ */
+function getCurrentUserId() {
+    // First check Firebase Auth
+    if (window.auth && window.auth.currentUser) {
+        return window.auth.currentUser.uid;
+    }
+    
+    // Fallback to localStorage
+    return localStorage.getItem('loggedInUserId');
+}
+
+/**
+ * Check if user is authenticated
+ * @returns {boolean}
+ */
+function isUserAuthenticated() {
+    // Check Firebase Auth first
+    if (window.auth && window.auth.currentUser) {
+        return true;
+    }
+    
+    // Fallback check
+    return !!localStorage.getItem('loggedInUserId');
+}
+
+// ============================================
 // BIO CRUD OPERATIONS
 // ============================================
 
@@ -83,8 +115,19 @@ async function getArtistBio(userId) {
  */
 async function saveArtistBio(userId, bioContent, publish = true) {
     try {
+        // Verify authentication
+        var currentUserId = getCurrentUserId();
+        if (!currentUserId) {
+            return { success: false, error: 'User not authenticated. Please log in again.' };
+        }
+
         if (!userId) {
             return { success: false, error: 'User ID is required' };
+        }
+
+        // Verify the userId matches the authenticated user
+        if (userId !== currentUserId) {
+            return { success: false, error: 'You can only edit your own bio' };
         }
 
         if (bioContent.length > MAX_BIO_LENGTH) {
@@ -148,8 +191,19 @@ async function saveArtistBio(userId, bioContent, publish = true) {
  */
 async function saveBioDraft(userId, bioContent) {
     try {
+        // Verify authentication
+        var currentUserId = getCurrentUserId();
+        if (!currentUserId) {
+            return { success: false, error: 'User not authenticated. Please log in again.' };
+        }
+
         if (!userId) {
             return { success: false, error: 'User ID is required' };
+        }
+
+        // Verify the userId matches
+        if (userId !== currentUserId) {
+            return { success: false, error: 'You can only edit your own bio' };
         }
 
         if (bioContent.length > MAX_BIO_LENGTH) {
@@ -530,7 +584,7 @@ function formatDate(date) {
  * Open the bio editor modal
  */
 async function openBioEditor() {
-    var userId = localStorage.getItem('loggedInUserId');
+    var userId = getCurrentUserId();
     
     if (!userId) {
         showNotification('Please log in to edit your bio', 'error');
@@ -577,7 +631,7 @@ function closeBioEditor() {
  * Open version history modal
  */
 async function openVersionHistory() {
-    var userId = localStorage.getItem('loggedInUserId');
+    var userId = getCurrentUserId();
     
     if (!userId) {
         showNotification('Please log in to view version history', 'error');
@@ -658,7 +712,7 @@ async function viewVersionDetails(versionId) {
  * Save bio from the editor
  */
 async function saveBioFromEditor() {
-    var userId = localStorage.getItem('loggedInUserId');
+    var userId = getCurrentUserId();
     var textarea = document.getElementById('bioEditorTextarea');
     
     if (!userId) {
@@ -693,7 +747,7 @@ async function saveBioFromEditor() {
  * Save bio as draft from editor
  */
 async function saveBioDraftFromEditor() {
-    var userId = localStorage.getItem('loggedInUserId');
+    var userId = getCurrentUserId();
     var textarea = document.getElementById('bioEditorTextarea');
     
     if (!userId) {
@@ -784,7 +838,7 @@ function initBioManager() {
     // Wait for Firebase to be ready first
     waitForFirebase(function() {
         // Check if user is logged in
-        var userId = localStorage.getItem('loggedInUserId');
+        var userId = getCurrentUserId();
         
         if (userId) {
             // Load and display current bio
@@ -877,3 +931,5 @@ window.showNotification = showNotification;
 window.saveBioFromEditor = saveBioFromEditor;
 window.saveBioDraftFromEditor = saveBioDraftFromEditor;
 window.previewBio = previewBio;
+window.getCurrentUserId = getCurrentUserId;
+window.isUserAuthenticated = isUserAuthenticated;
