@@ -377,17 +377,20 @@ body {
 #aboutus-image {
     width: 100%;
     border-radius: 10px;
+    min-width: 140px;
 }
 .aboutsection {
     width: 100%;
     padding: 40px;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
 }
 .aboutsection div{
     padding-left: 30px;
     width: 50%;
+    min-width: 140px;
 }
 #aboutus {
     width: 100%;
@@ -407,6 +410,7 @@ body {
     width: 100%;
     height: max-content;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
 }
@@ -414,8 +418,9 @@ body {
     overflow: auto;
     scrollbar-width: none;
     text-align: center;
-    width: 400px;
+    width: 300px;
     height: 400px;
+    min-width: 200px;
     margin: 5vw;
     padding: 30px;
     background-color: var(--base-light);
@@ -775,58 +780,6 @@ footer {
     color: #666;
 }
 
-@media (max-width: 992px) {
-    .bigTitle {
-        font-size: 32px;
-    }
-    .aboutsection {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .aboutsection div {
-        width: 90%;
-        padding-left: 0;
-        padding-top: 20px;
-    }
-
-    .missionvision {
-        flex-direction: column;
-    }
-
-    .missionvision div {
-        width: 80%;
-        margin: 20px 0;
-        height: auto;
-    }
-
-    .full-auc {
-        flex-direction: column;
-    }
-
-    .imgauc, .descauc {
-        width: 90%;
-        min-width: 300px;
-    }
-
-    #artContestSubmit form {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .filedrop, .editdesc {
-        width: 90%;
-        padding: 10px;
-    }
-    .navindex {
-        font-size: 50px;
-
-    }
-    #smenu * {
-        font-size: 20px;
-    }
-}
-
 @media (max-width: 768px) {
     .bigTitle {
         font-size: 32px;
@@ -855,5 +808,19 @@ footer {
     .artwork {
     max-height: 200px;
     max-width: 200px;
+    }
+    .aboutsection {
+        flex-direction: column;
+    }
+    .aboutsection div {
+        width: 100%;
+    }
+    #aboutusf h1 {
+    font-size: 30px;
+    margin-top:10px;
+    }
+    #aboutusf p {
+        font-size: 18px;
+        margin-top:10px;
     }
 }
