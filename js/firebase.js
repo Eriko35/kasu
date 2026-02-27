@@ -261,9 +261,10 @@
   
   /**
    * Get all public artworks (for guests)
+   * @param {string} category - Optional category filter ('local' or 'national')
    * @returns {Promise<Array>} - Array of public artwork documents
    */
-  async function getPublicArtworks() {
+  async function getPublicArtworks(category = null) {
     try {
       const artworksRef = collection(db, 'artworks');
       const q = query(
@@ -276,9 +277,25 @@
       const artworks = [];
       
       querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        
+        // Apply category filter if provided
+        if (category) {
+          // For local, include items with 'local' category OR missing category (legacy)
+          if (category === 'local') {
+            if (data.category && data.category !== 'local') {
+              return; // Skip non-local items
+            }
+          } 
+          // For other categories (national), require exact match
+          else if (data.category !== category) {
+            return; // Skip items that don't match
+          }
+        }
+        
         artworks.push({
           id: doc.id,
-          ...doc.data()
+          ...data
         });
       });
       

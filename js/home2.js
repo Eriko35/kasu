@@ -576,11 +576,10 @@ if (artContestForm) {
         const fileInput = document.getElementById('submContest');
         const titleInput = document.getElementById('contestSubmitTitle');
         const descInput = document.getElementById('contestSubmitDesc');
-        const categoryInput = document.getElementById('artCategory');
         const file = fileInput.files[0];
         const title = titleInput.value.trim();
         const description = descInput.value.trim();
-        const category = categoryInput ? categoryInput.value : 'local';
+        const category = 'local';
         
         // Validation
         if (!file) {
@@ -590,12 +589,6 @@ if (artContestForm) {
         
         if (!title) {
             showError('Please enter a title for your artwork.');
-            return;
-        }
-        
-        // Validate category selection
-        if (!category) {
-            showError('Please select a category (Local or National Museum).');
             return;
         }
         

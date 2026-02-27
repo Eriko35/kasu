@@ -331,62 +331,6 @@
                 
             </div>
             <a class="bckbtn" href="home2.html">BACK</a>
-            <!-- Static artworks can be kept or removed. Updating Spoliarium to use dynamic opener if needed, 
-                 but usually we rely on the DB loader. For now, keeping them as placeholders. -->
-            <div class="art" id="spoliarium" onclick="openStaticSpoliarium()">
-                <div>
-                    <img class="artimg" src="css/image/Spoliarium.jpg" alt="Spoliarium painting by Juan Luna">
-                </div>
-                <p>Spoliarium</p>
-            </div>
-            <div class="art">
-                <div>
-                    <img class="artimg" src="css/image/portraitlady.jpg" alt="Portrait of a Lady painting">
-                </div>
-                <p>Portrait of a Lady</p>
-            </div>
-            <div class="art">
-                <div>
-                    <img class="artimg" src="css/image/Tampuhan.jpg" alt="Tampuhan painting">
-                </div>
-                <p>Tampuhan</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
-            <div class="art">
-                <p>1</p>
-            </div>
         </div>
         <div class="floor">
             floor test
@@ -455,8 +399,8 @@
                         currentUserRole = profile.profile.role;
                         currentUserId = userId;
                         
-                        // Show Add Artwork button only for artists and admins
-                        if (currentUserRole === 'artist' || currentUserRole === 'admin') {
+                        // Show Add Artwork button only for admins
+                        if (currentUserRole === 'admin') {
                             const addBtn = document.getElementById('addArtworkBtn');
                             if (addBtn) {
                                 addBtn.style.display = 'block';
@@ -520,8 +464,8 @@
                     artDiv.className = 'art';
                     
                     let buttonsHtml = '';
-                    // Show Edit/Delete buttons only for the artist who owns the artwork or admin
-                    if (currentUserId && (currentUserRole === 'artist' || currentUserRole === 'admin') && artwork.artistId === currentUserId) {
+                    // Show Edit/Delete buttons only for admin
+                    if (currentUserId && currentUserRole === 'admin') {
                         buttonsHtml = `
                             <div class="art-buttons">
                                 <button class="art-btn art-btn-edit" onclick="editArtwork('${artwork.id}')">Edit</button>
