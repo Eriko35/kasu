@@ -183,6 +183,7 @@ function hideGuestFeatures() {
     const artistNav = document.getElementById('nav4');
     if (artistNav) {
         artistNav.style.display = 'none';
+        joinContestBtn.style.display = 'block'
     }
     
     // Hide Contest navigation

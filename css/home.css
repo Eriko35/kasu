@@ -420,7 +420,7 @@ body {
     text-align: center;
     width: 300px;
     height: 400px;
-    min-width: 200px;
+    min-width: 160px;
     margin: 5vw;
     padding: 30px;
     background-color: var(--base-light);
@@ -594,7 +594,7 @@ footer {
     flex-wrap: wrap;
     border: 1px solid black;
     width: 100%;
-    height: calc(100vh - 100px);
+    min-height: calc(100vh - 100px);
 }
 
 #artContestSubmit div {
@@ -636,6 +636,7 @@ footer {
 }
 .filedrop {
     width: 50%;
+    min-width: 200px;
     height: 100%;
     user-select: none;
 }
@@ -822,5 +823,19 @@ footer {
     #aboutusf p {
         font-size: 18px;
         margin-top:10px;
+    }
+    #artContestSubmit form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .filedrop {
+        width: 100%;
+        max-width: 300px;
+    }
+    .editdesc {
+        width: 100%;
     }
 }
