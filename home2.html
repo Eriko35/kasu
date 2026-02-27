@@ -4,23 +4,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kamuseo</title>
     <link rel="stylesheet" href="css/home.css">
+<style>
+        /* Custom Notification Toast Styles */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            max-width: 350px;
+            line-height: 1.5;
+        }
+        
+        .notification-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification-toast.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-left: 4px solid #1e7e34;
+        }
+        
+        .notification-toast.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border-left: 4px solid #bd2130;
+        }
+        
+        .notification-toast.info {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-left: 4px solid #0069d9;
+        }
+        
+        .notification-toast.warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            border-left: 4px solid #ffc107;
+            color: #333;
+        }
+        
+        .notification-toast .notification-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+        
+        .notification-toast .notification-close:hover {
+            opacity: 1;
+        }
+        
+        /* Admin Panel Artwork Item Styles */
+        .artwork-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            gap: 15px;
+        }
+        
+        .artwork-item img {
+            border-radius: 4px;
+        }
+        
+        .artwork-details {
+            flex: 1;
+        }
+        
+        .artwork-details h4 {
+            margin: 0 0 5px 0;
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        .artwork-details p {
+            margin: 3px 0;
+            color: #aaa;
+            font-size: 13px;
+        }
+        
+        .artwork-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .delete-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130);
+            transform: translateY(-1px);
+        }
+        
+        .delete-btn:active {
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body>
+    <!-- Custom Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
     <nav class="navbar">
         <div class="navdiv">
             <div><img src="css/icons/icon-dark.webp"></div>
             <div><p>KAMUSEO</p></div>
-            <div><a onclick="showMenu()"><img src="css/icons/menuon.webp"></a></div>
+            <div><a onclick="showMenu()"><img id="menuIcon" src="css/icons/menuon.webp"></a></div>
         </div>
                 
     </nav>
     <main class="main">
         <div class="maindiv">
-            <div class="homeindex" id="homef" style="display:none;">
+            <div class="homeindex" id="homef">
                 <div class="home-section">
                     <p class="bigTitle"><span id="contestTitle">Current Contest</span></p>
                     <p id="subdeadline">Submission Deadline: <span id="deadlineDate"> 01/01/26 </span> </p>
-                    <button id="joinContest">
+                    <button id="joinContest" style="display:none;">
                     Join Contest
                     </button>
                 </div>
@@ -29,8 +148,8 @@
                     <div id="rankone" class="art-featured">
                         <div>
                             <div class = "gold-frame">
-                                <div id="rankone" class="artwork">
-                                    <img class="artwork"src="css/image/Spoliarium.jpg" alt="">
+                                <div id="rankone" class="artwork" onclick="viewArtworkFull('Spoliarium', 'The Spoliarium is a painting by Filipino painter Juan Luna. It was submitted by Luna to the Exposición Nacional de Bellas Artes in 1884 in Madrid, where it garnered the first gold medal.', '1884', 'css/image/Spoliarium.jpg', 'National Museum')">
+                                    <img class="artwork" src="css/image/Spoliarium.jpg" alt="Spoliarium">
                                 </div>
                             </div>
                             <p>1st Place</p>
@@ -40,8 +159,8 @@
                     <div id="ranktwo" class="art-featured">
                         <div>
                             <div class = "iron-frame">
-                                <div id="ranktwo" class="artwork">
-                                    <img class="artwork" src="css/image/Tampuhan.jpg" alt="">
+                                <div id="ranktwo" class="artwork" onclick="viewArtworkFull('Tampuhan', 'Tampuhan, meaning &quot;sulking&quot;, is an 1895 classic oil painting by Filipino painter Juan Luna. It depicts a Filipino man and a Filipino woman who are having a lovers quarrel.', '1895', 'css/image/Tampuhan.jpg', 'Local Museum')">
+                                    <img class="artwork" src="css/image/Tampuhan.jpg" alt="Tampuhan">
                                 </div>
                             </div>
                             <p>2nd Place</p>
@@ -50,8 +169,8 @@
                     <div  class="art-featured">
                         <div>
                             <div class = "bronze-frame">
-                                <div id="rankthree" class="artwork">
-                                    <img class="artwork" src="css/image/portraitlady.jpg" alt="">
+                                <div id="rankthree" class="artwork" onclick="viewArtworkFull('Portrait of a Lady', 'Portrait of a Lady (Paz Pardo de Tavera) is a painting by Juan Luna. It depicts his wife, Paz Pardo de Tavera.', '1890s', 'css/image/portraitlady.jpg', 'National Museum')">
+                                    <img class="artwork" src="css/image/portraitlady.jpg" alt="Portrait of a Lady">
                                 </div>
                             </div>
                             <p>3rd Place</p>
@@ -63,7 +182,7 @@
                         
                         <p><img src="css/icons/temple.webp" alt="National Museum" class="entrance-image"><br>National Museum</p>
                     </a>
-                    <a class="entrance" id="e2" href="scroll.html">
+                    <a class="entrance" id="e2" href="locmuseum.html">
                         <p><img src="css/icons/trophy.webp" alt="National Museum" class="entrance-image"><br>Local Museum</p>
                     </a>
                 </div>
@@ -155,8 +274,118 @@
                     <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
                 </div>
             </div>
-            <div class="homeindex" id="artistf" >
-
+            <div class="homeindex" id="artistf" style="display:none;">
+                <!-- Artist Profile Header -->
+                <div class="artist-header">
+                    <div class="artist-profile-image">
+                        <img id="artistAvatar" src="css/image/Juanluna.jpg" alt="Artist Profile">
+                    </div>
+                    <div class="artist-info">
+                        <h1 id="artistName">Artist Name</h1>
+                        <p id="artistUsername" class="artist-username">@artistusername</p>
+                        <p id="artistBio" class="artist-bio">Artist bio goes here...</p>
+                        <div class="artist-stats">
+                            <div class="stat-item">
+                                <span id="totalArtworksCount" class="stat-number">0</span>
+                                <span class="stat-label">Artworks</span>
+                            </div>
+                            <div class="stat-item">
+                                <span id="localArtworksCount" class="stat-number">0</span>
+                                <span class="stat-label">Local Museum</span>
+                            </div>
+                            <div class="stat-item">
+                                <span id="nationalArtworksCount" class="stat-number">0</span>
+                                <span class="stat-label">National Museum</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Navigation -->
+                <div class="artist-tabs">
+                    <button class="tab-btn active" data-tab="gallery" onclick="switchArtistTab('gallery')">
+                        <span class="tab-icon">🎨</span> Gallery
+                    </button>
+                    <button class="tab-btn" data-tab="about" onclick="switchArtistTab('about')">
+                        <span class="tab-icon">👤</span> About
+                    </button>
+                    <button class="tab-btn" data-tab="exhibitions" onclick="switchArtistTab('exhibitions')">
+                        <span class="tab-icon">🏛️</span> Exhibitions
+                    </button>
+                </div>
+                
+                <!-- Tab Content -->
+                <div class="artist-tab-content">
+                    <!-- Gallery Tab -->
+                    <div class="tab-panel active" id="tab-gallery">
+                        <div class="gallery-filters">
+                            <button class="filter-btn active" data-filter="all" onclick="filterGallery('all')">All</button>
+                            <button class="filter-btn" data-filter="local" onclick="filterGallery('local')">Local Museum</button>
+                            <button class="filter-btn" data-filter="national" onclick="filterGallery('national')">National Museum</button>
+                        </div>
+                        <div id="artistGalleryGrid" class="gallery-grid">
+                            <!-- Artworks will be loaded here -->
+                            <div class="loading-spinner">Loading artworks...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- About Tab -->
+                    <div class="tab-panel" id="tab-about">
+                        <div class="about-section">
+                            <h2>About the Artist</h2>
+                            <div class="about-card">
+                                <div class="about-row">
+                                    <div class="about-label">Full Name</div>
+                                    <div id="aboutFullName" class="about-value">Not specified</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Username</div>
+                                    <div id="aboutUsername" class="about-value">@artistusername</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Member Since</div>
+                                    <div id="aboutMemberSince" class="about-value">Unknown</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Category</div>
+                                    <div id="aboutCategory" class="about-value">Artist</div>
+                                </div>
+                                <div class="about-row">
+                                    <div class="about-label">Bio</div>
+                                    <div id="aboutBio" class="about-value">No bio available</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exhibitions Tab -->
+                    <div class="tab-panel" id="tab-exhibitions">
+                        <div class="exhibitions-section">
+                            <h2>Exhibitions & Collections</h2>
+                            <div id="exhibitionsList" class="exhibitions-grid">
+                                <div class="exhibition-card">
+                                    <div class="exhibition-image">
+                                        <img src="css/image/Tampuhan.jpg" alt="Local Museum">
+                                    </div>
+                                    <div class="exhibition-info">
+                                        <h3>Local Museum Collection</h3>
+                                        <p id="localExhibitionCount">0 artworks</p>
+                                    </div>
+                                </div>
+                                <div class="exhibition-card">
+                                    <div class="exhibition-image">
+                                        <img src="css/image/Spoliarium.jpg" alt="National Museum">
+                                    </div>
+                                    <div class="exhibition-info">
+                                        <h3>National Museum Collection</h3>
+                                        <p id="nationalExhibitionCount">0 artworks</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
             <div class="homeindex" id="aboutusf" style="display:none;">
                 <div class="aboutsection">
@@ -164,7 +393,7 @@
                         <img src="css/image/homeimage.webp" alt="About Us Image" id="aboutus-image">
                     </div>
                     
-                    <div>
+                    <div class="abs-desc">
                         <h1>About us</h1>
                                             <p> KaMuseo was created by students with the goal of expressing art through a digital platform. It serves as a space where creativity can be shared and experienced. 
                         Built with creativity and passion, KaMuseo reflects how art can evolve into technology while vastyleluing the expression and culture of arts.
@@ -210,44 +439,71 @@
                     <div class="aucart"><img src="css/image/portraitlady.jpg"><div><p class="aucTitle"><p>sample image only</p></p><p>$999,999,999</p></div></div>
                 </div>
             </div>
-            <div class="homeindex" id="artContestSubmit">
+            <div class="homeindex" id="artContestSubmit" style="display:none;">
                 <form id="art-contest-submit">
                     <div class="filedrop">
                         <label class="dropFileArea"> Upload Photo Here.
-                            <input type="file" accept="image/*" id="submContest" hidden>
+                            <input type="file" accept="image/jpeg, image/png, image/gif, image/webp, image/bmp, image/svg+xml, image/avif" id="submContest" hidden>
                             <img id="uploadPreview" style="display:none;">
                         </label>
                     </div>
                     <div class="editdesc">
                         <input type="text" placeholder="Art Title" id="contestSubmitTitle">
                         <textarea type="text" placeholder="Art Description" id="contestSubmitDesc"></textarea>
-                        
-                        <!-- Auction Section -->
-                        <div class="auction-options" style="margin-top: 15px; padding: 15px; border: 1px solid #ccc; border-radius: 8px;">
-                            <h3 style="margin-top: 0;">Put on Auction</h3>
-                            <label style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox" id="addToAuction" style="width: auto;">
-                                <span>Yes, I want to auction this artwork</span>
-                            </label>
-                            <div id="auctionDetails" style="display: none; margin-top: 15px;">
-                                <label style="display: block; margin-bottom: 5px;">Starting Price ($):</label>
-                                <input type="number" id="auctionStartingPrice" placeholder="Enter starting price" min="1" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                
-                                <label style="display: block; margin-bottom: 5px;">Auction Duration:</label>
-                                <select id="auctionDuration" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                    <option value="1">1 Day</option>
-                                    <option value="3">3 Days</option>
-                                    <option value="7" selected>7 Days</option>
-                                    <option value="14">14 Days</option>
-                                    <option value="30">30 Days</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" id="submitArtworkBtn">Submit</button>
+                        <select id="artCategory" class="category-select">
+                            <option value="local">Local Museum</option>
+                            <option value="national">National Museum</option>
+                        </select>
+                        <button>Submit</button>
                     </div>
                 </form>
             </div>
+            
+            <!-- Admin Panel Section -->
+            <div class="homeindex" id="adminPanel" style="display:none;">
+                <div class="admin-container">
+                    <h2>Artist Admin Panel</h2>
+                    <div class="admin-stats">
+                        <div class="stat-card">
+                            <h3>My Artworks</h3>
+                            <p id="totalArtworks">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Local Museum</h3>
+                            <p id="localArtworks">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>National Museum</h3>
+                            <p id="nationalArtworks">0</p>
+                        </div>
+                    </div>
+                    <div class="admin-actions">
+                        <h3>Manage My Artworks</h3>
+                        <div id="myArtworksList" class="artworks-list">
+                            <!-- Artworks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Artwork Modal (Moved here to be accessible from all sections) -->
+            <div id="artistArtworkModal" class="artist-modal" style="display:none;">
+                <div class="artist-modal-content">
+                    <span class="artist-modal-close" onclick="closeArtistModal()">&times;</span>
+                    <div class="artist-modal-grid">
+                        <div class="modal-image">
+                            <img id="modalArtworkImage" src="" alt="Artwork">
+                        </div>
+                        <div class="modal-details">
+                            <h2 id="modalArtworkTitle">Artwork Title</h2>
+                            <p id="modalArtworkCategory" class="artwork-category">Category</p>
+                            <p id="modalArtworkDescription" class="artwork-description">Description</p>
+                            <p id="modalArtworkDate" class="artwork-date">Created: </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <footer>
                 <p>Group 1: Boomtarat<br>
                 <a href="samuelnathan4003@gmail.com">boomtarat@example.com</a>
@@ -264,6 +520,8 @@
                     <li><a class="navindex" onclick="navIndex(2)" id="nav2">About Us</a></li>
                     <li><a class="navindex" onclick="navIndex(3)" id="nav3" >Auction</a></li>
                     <li><a class="navindex" onclick="navIndex(4)" id="nav4" style="display: none;">Artist</a></li>
+                    <li><a class="navindex" onclick="navIndex(6)" id="nav6" style="display: none;">Contest</a></li>
+                    <li><a class="navindex" onclick="navIndex(5)" id="nav5" style="display: none;">Admin Panel</a></li>
                     <li><label for="themes">Theme </label>
                         <select id="themes">
                         <option value="dark">Dark</option>
@@ -282,7 +540,8 @@
             </div>
         </div>
     </main>
-    <script type="module" src="js/supabase.js"></script>
+    <script src="js/firebase.js" type="module"></script>
+    <script src="js/supabase-client.js" type="module"></script>
     <script src="js/home2.js"></script>
 </body>
 </html>
