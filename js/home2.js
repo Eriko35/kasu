@@ -910,3 +910,49 @@ async function showProfilePictureUploadButton() {
     }
 }
 
+// ============================================
+// FEATURED ARTWORKS LOADER
+// ============================================
+
+async function loadFeaturedArtworks() {
+    // Wait for Firebase functions to be available
+    if (typeof window.getPublicArtworks !== 'function') {
+        setTimeout(loadFeaturedArtworks, 500);
+        return;
+    }
+
+    try {
+        // Get local museum artworks
+        const result = await window.getPublicArtworks('local');
+        
+        if (result.success && result.artworks && result.artworks.length > 0) {
+            // Take top 3
+            const featured = result.artworks.slice(0, 3);
+            const artworkDivs = document.querySelectorAll('.featured-artworks .artwork');
+            
+            featured.forEach((art, index) => {
+                if (index < artworkDivs.length) {
+                    const div = artworkDivs[index];
+                    const img = div.querySelector('img');
+                    
+                    if (img) {
+                        img.src = art.imageUrl;
+                        img.alt = art.title;
+                    }
+                    
+                    // Update onclick
+                    const title = (art.title || '').replace(/'/g, "\\'");
+                    const desc = (art.description || '').replace(/'/g, "\\'").replace(/\n/g, ' ');
+                    const date = new Date(art.createdAt).getFullYear();
+                    
+                    div.setAttribute('onclick', `viewArtworkFull('${title}', '${desc}', '${date}', '${art.imageUrl}', 'Local Museum')`);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error loading featured artworks:', error);
+    }
+}
+
+// Initialize featured artworks
+loadFeaturedArtworks();
