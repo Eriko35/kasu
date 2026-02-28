@@ -689,22 +689,6 @@
             <div class="homeindex" id="artistf" style="display:none;">
                 <!-- Artist Profile Header -->
                 <div class="artist-header">
-                    <div class="profile-picture-upload-wrapper" id="profilePictureWrapper" style="display: none;">
-                        <div class="artist-profile-image">
-                            <img id="artistAvatar" src="css/image/Juanluna.jpg" alt="Artist Profile">
-                        </div>
-                        <div class="profile-picture-overlay" onclick="document.getElementById('profilePictureInput').click()">
-                            <span>📷</span>
-                            <div class="profile-picture-overlay-text">Change Photo</div>
-                        </div>
-                        <div id="profilePictureLoading" class="profile-picture-loading" style="display: none;">
-                            <div class="spinner"></div>
-                        </div>
-                        <input type="file" id="profilePictureInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="handleProfilePictureUpload(event)">
-                    </div>
-                    <div class="artist-profile-image" id="artistProfileImageDefault">
-                        <img id="artistAvatar" src="css/image/Juanluna.jpg" alt="Artist Profile">
-                    </div>
                     <div class="artist-info">
                         <h1 id="artistName">Artist Name</h1>
                         <p id="artistUsername" class="artist-username">@artistusername</p>
@@ -1038,11 +1022,10 @@
         <div class="sidebar" id="sideBar">
             <div id="smenu">
                 <ul>
-                    <li class="usr-pfp"><div class="userprofile"><img src="css/image/Juanluna.jpg"></div></li>
                     <li><a class="navindex" onclick="navIndex(1)" id="nav1">Home</a></li>
                     <li><a class="navindex" onclick="navIndex(2)" id="nav2">About Us</a></li>
                     <li><a class="navindex" onclick="navIndex(3)" id="nav3" style="display: none;">Auction</a></li>
-                    <li><a class="navindex" onclick="navIndex(4)" id="nav4" style="display: none;">Artist</a></li>
+                    <li><a class="navindex" onclick="navIndex(4)" id="nav4" style="display: none;">Account</a></li>
                     <li><a class="navindex" onclick="navIndex(6)" id="nav6" style="display: none;">Contest</a></li>
                     <li><a class="navindex" onclick="navIndex(5)" id="nav5" style="display: none;">Admin Panel</a></li>
                     <li><label for="themes">Theme </label>

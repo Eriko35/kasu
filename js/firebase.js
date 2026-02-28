@@ -781,114 +781,6 @@
   }
 
   /**
-   * Toggle vote for an artwork (Local Museum only)
-   * @param {string} userId - The user's ID
-   * @param {string} artworkId - The artwork ID
-   * @returns {Promise<Object>} - Result with new vote count and status
-   */
-  async function toggleArtworkVote(userId, artworkId) {
-    try {
-      return await runTransaction(db, async (transaction) => {
-        const artworkRef = doc(db, 'artworks', artworkId);
-        const userVoteRef = doc(db, 'users', userId, 'votes', artworkId);
-        
-        const artworkDoc = await transaction.get(artworkRef);
-        if (!artworkDoc.exists()) {
-          throw "Artwork not found";
-        }
-        
-        const artworkData = artworkDoc.data();
-        // Allow voting if category is 'local' OR if category is missing (legacy artworks assumed local)
-        if (artworkData.category && artworkData.category !== 'local') {
-          throw "Voting is only allowed for Local Museum artworks";
-        }
-        
-        const userVoteDoc = await transaction.get(userVoteRef);
-        
-        let newCount = artworkData.voteCount || 0;
-        let voted = false;
-        
-        if (userVoteDoc.exists()) {
-          // Remove vote
-          transaction.delete(userVoteRef);
-          transaction.update(artworkRef, { voteCount: increment(-1) });
-          newCount = Math.max(0, newCount - 1);
-          voted = false;
-        } else {
-          transaction.set(userVoteRef, { timestamp: new Date().toISOString() });
-          transaction.update(artworkRef, { voteCount: increment(1) });
-          
-          newCount++;
-          voted = true;
-        }
-        
-        return { success: true, voted, newCount };
-      });
-    } catch (error) {
-      console.error('Vote error:', error);
-      return { success: false, error: typeof error === 'string' ? error : error.message };
-    }
-  }
-
-  async function getUserVotes(userId) {
-    try {
-        const votesRef = collection(db, 'users', userId, 'votes');
-        const snapshot = await getDocs(votesRef);
-        return { success: true, votes: snapshot.docs.map(doc => doc.id) };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-  }
-  
-  /**
-   * Initialize/Migrate data for voting system
-   * Ensures all artworks have category and voteCount fields
-   * Run this function in console: initializeVotingSystem()
-   */
-  async function initializeVotingSystem() {
-    try {
-      const artworksRef = collection(db, 'artworks');
-      const snapshot = await getDocs(artworksRef);
-      
-      let updatedCount = 0;
-      const updatePromises = [];
-      
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const updates = {};
-        let needsUpdate = false;
-        
-        // Default category to 'local' if missing
-        if (!data.category) {
-          updates.category = 'local';
-          needsUpdate = true;
-        }
-        
-        // Initialize voteCount if missing
-        if (data.voteCount === undefined) {
-          updates.voteCount = 0;
-          needsUpdate = true;
-        }
-        
-        if (needsUpdate) {
-          updatePromises.push(setDoc(doc(db, 'artworks', docSnap.id), updates, { merge: true }));
-          updatedCount++;
-        }
-      });
-      
-      if (updatePromises.length > 0) {
-        await Promise.all(updatePromises);
-      }
-      
-      console.log(`Voting system initialized. Updated ${updatedCount} artworks.`);
-      return { success: true, updatedCount };
-    } catch (error) {
-      console.error('Initialization error:', error);
-      return { success: false, error: error.message };
-    }
-  }
-  
-  /**
    * Creates a new user with validation to prevent admin domain hijacking.
    * This should be used for your public sign-up form.
    * @param {string} email - User's email.
@@ -1095,9 +987,6 @@
   window.deleteArtworkImage = deleteArtworkImage;
   window.validateImageFile = validateImageFile;
   window.generateArtworkPath = generateArtworkPath;
-  window.toggleArtworkVote = toggleArtworkVote;
-  window.getUserVotes = getUserVotes;
-  window.initializeVotingSystem = initializeVotingSystem;
   window.registerNewUser = registerNewUser; // For your sign-up page
   window.createSpecialAdminAccount = createSpecialAdminAccount; // For one-time console execution
   window.getWebsiteSettings = getWebsiteSettings;
